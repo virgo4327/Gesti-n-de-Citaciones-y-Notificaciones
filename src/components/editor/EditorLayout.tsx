@@ -1,5 +1,5 @@
-import { Download, Eye, PenLine, Save } from "lucide-react";
-import { useState } from "react";
+import { Download, Eye, PenLine, Save, Eraser } from "lucide-react";
+import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -10,14 +10,18 @@ import { useDocumentStore } from "../../store/documentStore";
 import { documentDefaults } from "../../constants";
 import { documentLabels } from "../../types";
 import type { DocumentPayload, DocumentType } from "../../types";
-import FormInvestigado from "./FormInvestigado";
-import FormNotificacion from "./FormNotificacion";
-import FormTestigo from "./FormTestigo";
+import FormInvestigado, { type FormInvestigadoHandle } from "./FormInvestigado";
+import FormNotificacion, { type FormNotificacionHandle } from "./FormNotificacion";
+import FormTestigo, { type FormTestigoHandle } from "./FormTestigo";
+
+type FormHandle = FormInvestigadoHandle | FormTestigoHandle | FormNotificacionHandle;
 
 export default function EditorLayout({ type }: { type: DocumentType }) {
   const saveDraft  = useDocumentStore((s) => s.saveDraft);
   const addHistory = useDocumentStore((s) => s.addHistory);
   const drafts     = useDocumentStore((s) => s.drafts);
+
+  const formRef = useRef<FormHandle>(null);
 
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
   const [documentData, setDocumentData] = useState<DocumentPayload>(() => 
@@ -33,28 +37,29 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
       saveDraft(type, data);
       alert("Borrador guardado correctamente");
       setIsSavingDraft(false);
-      // Stay in editor tab
     } else {
       setActiveTab("preview");
     }
   };
 
-  // Nueva generación de PDF usando html2canvas + jsPDF (mucho más confiable)
+  const handleClear = () => {
+    formRef.current?.reset();
+    setDocumentData(documentDefaults[type]);
+  };
+
   const handleGeneratePdf = async () => {
     setGenerating(true);
 
     try {
-      // Creamos un contenedor temporal oculto con el preview
       const container = document.createElement("div");
       container.style.position = "fixed";
       container.style.left = "-9999px";
       container.style.top = "0";
-      container.style.width = "794px";      // Ancho A4
-      container.style.height = "1123px";    // Alto A4 (para que los absolute del footer funcionen bien)
+      container.style.width = "794px";
+      container.style.height = "1123px";
       container.style.overflow = "visible";
       document.body.appendChild(container);
 
-      // Renderizamos el mismo componente de vista previa
       const { createRoot } = await import("react-dom/client");
       const root = createRoot(container);
       
@@ -62,8 +67,6 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
         <DocumentPreview type={type} data={documentData} />
       );
 
-      // Esperamos más tiempo para que se rendericen correctamente los elementos con position: absolute
-      // (logos del encabezado, pie de página y sello)
       await new Promise((resolve) => setTimeout(resolve, 400));
 
       const previewElement = container.querySelector(".doc-paper") as HTMLElement;
@@ -72,16 +75,14 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
       }
 
       const canvas = await html2canvas(previewElement, {
-        scale: 2, // Mejor calidad
+        scale: 2,
         useCORS: true,
         logging: false,
       });
 
-      // Limpiamos el contenedor temporal
       root.unmount();
       document.body.removeChild(container);
 
-      // Creamos el PDF
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
@@ -98,11 +99,9 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
       let heightLeft = imgHeight;
       let position = 0;
 
-      // Primera página
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pdfHeight;
 
-      // Páginas adicionales si el documento es muy largo
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -112,7 +111,6 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
 
       pdf.save(`${documentData.numero}-${type}.pdf`);
 
-      // Guardamos en el historial
       addHistory(type, documentData);
     } catch (e) {
       console.error("[PDF]", e);
@@ -143,22 +141,26 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
 
         {activeTab === "editor" && (
           <div className="rounded-lg border bg-white p-5 shadow-sm">
-            {type === "investigado"  && <FormInvestigado  initial={undefined} onValid={handleValid} />}
-            {type === "testigo"      && <FormTestigo      initial={undefined} onValid={handleValid} />}
-            {type === "notificacion" && <FormNotificacion initial={undefined} onValid={handleValid} />}
+            {type === "investigado"  && <FormInvestigado  ref={formRef} initial={undefined} onValid={handleValid} />}
+            {type === "testigo"      && <FormTestigo      ref={formRef} initial={undefined} onValid={handleValid} />}
+            {type === "notificacion" && <FormNotificacion ref={formRef} initial={undefined} onValid={handleValid} />}
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <Button
+                variant="danger"
+                onClick={handleClear}
+              >
+                <Eraser className="h-4 w-4" /> Limpiar
+              </Button>
               <Button
                 variant="secondary"
                 className="border border-slate-200"
                 onClick={() => {
                   setIsSavingDraft(true);
-                  // Trigger form submit to get latest validated data
                   const form = document.getElementById("document-form") as HTMLFormElement;
                   if (form) {
                     form.requestSubmit();
                   } else {
-                    // Fallback if form not found
                     saveDraft(type, documentData);
                     alert("Borrador guardado");
                     setIsSavingDraft(false);

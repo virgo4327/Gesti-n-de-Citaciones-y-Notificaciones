@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import type { FieldErrors, FieldValues, Path, UseFormRegister } from "react-hook-form";
 
 type FieldProps<T extends FieldValues> = {
@@ -15,6 +15,16 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
   const error = errors[name]?.message as string | undefined;
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
+
+  useEffect(() => {
+    const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null;
+    if (el) {
+      const syncValue = () => setValue(el.value);
+      syncValue();
+      el.addEventListener("input", syncValue);
+      return () => el.removeEventListener("input", syncValue);
+    }
+  }, [name]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setValue(e.currentTarget.value);
@@ -38,6 +48,7 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
 
   const inputProps = {
     ...rest,
+    name: name as string,
     ref,
     onChange: handleOnChange,
     onFocus: handleFocus,

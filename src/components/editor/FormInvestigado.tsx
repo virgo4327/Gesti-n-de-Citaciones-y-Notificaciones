@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { investigadoSchema, type InvestigadoSchema } from "../../schemas/investigadoSchema";
 import type { InvestigadoData } from "../../types";
@@ -12,14 +13,24 @@ type Props = {
   onValid: (data: InvestigadoData) => void;
 };
 
-export default function FormInvestigado({ initial, onValid }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<InvestigadoSchema>({
+export interface FormInvestigadoHandle {
+  reset: () => void;
+}
+
+const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onValid }, ref) => {
+  const { register, handleSubmit, formState: { errors }, reset: formReset } = useForm<InvestigadoSchema>({
     resolver: zodResolver(investigadoSchema),
     defaultValues: { ...investigadoDefaults, ...initial },
   });
+
+  useImperativeHandle(ref, () => ({
+    reset: () => formReset({ ...investigadoDefaults }),
+  }));
+
   const uppercase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     event.currentTarget.value = upper(event.currentTarget.value);
   };
+
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-2">
@@ -34,9 +45,12 @@ export default function FormInvestigado({ initial, onValid }: Props) {
         <Field label="Agraviado" name="agraviado" register={register} errors={errors} onInput={uppercase} placeholder="Ej: ESTADO PERUANO" />
       </div>
       <Field label="Descripción del hecho" name="descripcionHecho" register={register} errors={errors} textarea placeholder="Describa los hechos investigados..." />
-      <div className="pt-4">
+      <div className="flex gap-3 pt-4">
         <Button type="submit">Actualizar vista previa</Button>
       </div>
     </form>
   );
-}
+});
+
+FormInvestigado.displayName = "FormInvestigado";
+export default FormInvestigado;
