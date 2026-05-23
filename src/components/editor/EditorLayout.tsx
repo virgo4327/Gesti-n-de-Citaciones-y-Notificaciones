@@ -17,14 +17,26 @@ import FormTestigo from "./FormTestigo";
 export default function EditorLayout({ type }: { type: DocumentType }) {
   const saveDraft  = useDocumentStore((s) => s.saveDraft);
   const addHistory = useDocumentStore((s) => s.addHistory);
+  const drafts     = useDocumentStore((s) => s.drafts);
 
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
-  const [documentData, setDocumentData] = useState<DocumentPayload>(() => documentDefaults[type]);
+  const [documentData, setDocumentData] = useState<DocumentPayload>(() => 
+    drafts[type] ?? documentDefaults[type]
+  );
   const [generating, setGenerating] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const handleValid = (data: DocumentPayload) => {
     setDocumentData(data);
-    setActiveTab("preview");
+
+    if (isSavingDraft) {
+      saveDraft(type, data);
+      alert("Borrador guardado correctamente");
+      setIsSavingDraft(false);
+      // Stay in editor tab
+    } else {
+      setActiveTab("preview");
+    }
   };
 
   // Nueva generación de PDF usando html2canvas + jsPDF (mucho más confiable)
@@ -134,13 +146,38 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
             {type === "investigado"  && <FormInvestigado  initial={undefined} onValid={handleValid} />}
             {type === "testigo"      && <FormTestigo      initial={undefined} onValid={handleValid} />}
             {type === "notificacion" && <FormNotificacion initial={undefined} onValid={handleValid} />}
+
+            <div className="mt-6 flex justify-end">
+              <Button
+                variant="secondary"
+                className="border border-slate-200"
+                onClick={() => {
+                  setIsSavingDraft(true);
+                  // Trigger form submit to get latest validated data
+                  const form = document.getElementById("document-form") as HTMLFormElement;
+                  if (form) {
+                    form.requestSubmit();
+                  } else {
+                    // Fallback if form not found
+                    saveDraft(type, documentData);
+                    alert("Borrador guardado");
+                    setIsSavingDraft(false);
+                  }
+                }}
+              >
+                <Save className="h-4 w-4" /> Guardar borrador
+              </Button>
+            </div>
           </div>
         )}
 
         {activeTab === "preview" && (
           <div>
             <div className="mb-3 flex justify-end gap-2">
-              <Button variant="secondary" className="border border-slate-200" onClick={() => saveDraft(type, documentData)}>
+              <Button variant="secondary" className="border border-slate-200" onClick={() => {
+                saveDraft(type, documentData);
+                alert("Borrador guardado correctamente");
+              }}>
                 <Save className="h-4 w-4" /> Guardar borrador
               </Button>
               <Button onClick={handleGeneratePdf} disabled={generating}>
