@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #102033;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.institutional-pattern {
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 32px 32px, 24px 24px;
+}
+
+.field {
+  @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-action focus:ring-2 focus:ring-action/20;
+}
+
+.label {
+  @apply text-xs font-bold uppercase tracking-wide text-slate-600;
+}
+
+.error {
+  @apply mt-1 text-xs font-medium text-red-600;
+}
+
+.doc-paper {
+  font-family: Arial, Helvetica, sans-serif;
+}
