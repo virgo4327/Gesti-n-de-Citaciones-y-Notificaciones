@@ -1,3 +1,4 @@
+import { useState, type ChangeEvent } from "react";
 import { Trash2 } from "lucide-react";
 import { useFieldArray, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import type { NotificacionSchema } from "../../schemas/notificacionSchema";
@@ -8,6 +9,36 @@ type Props = {
   register: UseFormRegister<NotificacionSchema>;
   errors: FieldErrors<NotificacionSchema>;
 };
+
+function GhostInput({ name, register, placeholder, type }: { name: string; register: UseFormRegister<NotificacionSchema>; placeholder: string; type?: string }) {
+  const [focused, setFocused] = useState(false);
+  const [value, setValue] = useState("");
+  const { onChange, onBlur, ref, ...rest } = register(name as never);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setValue(e.currentTarget.value);
+  };
+
+  const hasValue = value.length > 0 || focused;
+
+  return (
+    <span className="ghost-field ghost-field-inline">
+      <input
+        {...rest}
+        ref={ref}
+        type={type || "text"}
+        onChange={(e) => { handleChange(e); onChange(e); }}
+        onFocus={() => setFocused(true)}
+        onBlur={(e) => { setFocused(false); onBlur(e); }}
+        className="field field-ghost"
+        aria-label={placeholder}
+      />
+      <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
+        {placeholder}
+      </span>
+    </span>
+  );
+}
 
 export default function TablaNotificacion({ control, register, errors }: Props) {
   const { fields, append, remove } = useFieldArray({ control, name: "citados" });
@@ -35,15 +66,21 @@ export default function TablaNotificacion({ control, register, errors }: Props) 
             {fields.map((field, index) => (
               <tr key={field.id} className="border-t">
                 <td className="px-3 py-2 font-bold">{index + 1}</td>
-                 <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.nombres`)} placeholder="Nombre del citado" /></td>
-                 <td className="px-3 py-2">
-                   <select className="field" {...register(`citados.${index}.condicion`)}>
-                     <option>TESTIGO</option>
-                     <option>INVESTIGADO</option>
-                   </select>
-                 </td>
-                 <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.fecha`)} placeholder="DD/MM/AAAA" /></td>
-                 <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.hora`)} placeholder="HH:MM" /></td>
+                <td className="px-3 py-2">
+                  <GhostInput name={`citados.${index}.nombres`} register={register} placeholder="Nombre del citado" />
+                </td>
+                <td className="px-3 py-2">
+                  <select className="field" {...register(`citados.${index}.condicion`)}>
+                    <option>TESTIGO</option>
+                    <option>INVESTIGADO</option>
+                  </select>
+                </td>
+                <td className="px-3 py-2">
+                  <GhostInput name={`citados.${index}.fecha`} register={register} placeholder="DD/MM/AAAA" />
+                </td>
+                <td className="px-3 py-2">
+                  <GhostInput name={`citados.${index}.hora`} register={register} placeholder="HH:MM" />
+                </td>
                 <td className="px-3 py-2">
                   <Button type="button" variant="danger" className="h-9 w-9 px-0" onClick={() => remove(index)} disabled={fields.length === 1}>
                     <Trash2 className="h-4 w-4" />
