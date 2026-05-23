@@ -2,13 +2,17 @@ import {
   FilePlus2,
   History,
   ShieldCheck,
+  Pencil,
+  Trash2,
+  FileText,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { useDocumentStore } from "../../store/documentStore";
 import { documentLabels } from "../../types";
 import { moduleData } from "../../constants";
+import type { DocumentType } from "../../types";
 
 const moduleCards = moduleData.map(({ label, href, icon, color }) => ({
   title: label,
@@ -23,13 +27,21 @@ const moduleCards = moduleData.map(({ label, href, icon, color }) => ({
 }));
 
 export default function OperationalDashboard() {
-  const { history, drafts } = useDocumentStore();
+  const { history, drafts, clearDraft } = useDocumentStore();
+  const navigate = useNavigate();
+
+  const draftEntries = Object.entries(drafts) as [DocumentType, any][];
+
   const stats = [
     { label: "Sistema",   value: "Operativo" },
     { label: "Generados", value: String(history.length) },
-    { label: "Borradores",value: String(Object.keys(drafts).length) },
+    { label: "Borradores",value: String(draftEntries.length) },
   ];
   const latest = history.slice(0, 3);
+
+  const handleLoadDraft = (type: DocumentType) => {
+    navigate(`/editor/${type}`);
+  };
 
   return (
     <main className="bg-slate-100 px-4 py-5 md:px-8 lg:px-10">
@@ -108,6 +120,54 @@ export default function OperationalDashboard() {
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* ── Borradores guardados ── */}
+        <section className="rounded-lg border bg-white p-5 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-black text-police">Borradores guardados</h2>
+            <FileText className="h-5 w-5 text-slate-400" />
+          </div>
+          {draftEntries.length === 0 ? (
+            <p className="text-sm text-slate-500">Sin borradores guardados.</p>
+          ) : (
+            <div className="grid gap-2">
+              {draftEntries.map(([type, draft]) => (
+                <div
+                  key={type}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 px-4 py-3 text-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-100 text-amber-700">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-black text-police">{documentLabels[type]}</p>
+                      <p className="text-xs text-slate-500">
+                        {draft.nombre ? `N° ${draft.numero} — ${draft.nombre}` : "Sin datos completos"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      className="h-8 px-3 text-xs border border-slate-200"
+                      onClick={() => handleLoadDraft(type)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Editar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="h-8 px-3 text-red-500 hover:bg-red-50 hover:text-red-600"
+                      onClick={() => clearDraft(type)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── Últimos documentos ── */}
