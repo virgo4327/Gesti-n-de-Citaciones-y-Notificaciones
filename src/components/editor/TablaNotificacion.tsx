@@ -35,15 +35,15 @@ export default function TablaNotificacion({ control, register, errors }: Props) 
             {fields.map((field, index) => (
               <tr key={field.id} className="border-t">
                 <td className="px-3 py-2 font-bold">{index + 1}</td>
-                <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.nombres`)} /></td>
-                <td className="px-3 py-2">
-                  <select className="field" {...register(`citados.${index}.condicion`)}>
-                    <option>TESTIGO</option>
-                    <option>INVESTIGADO</option>
-                  </select>
-                </td>
-                <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.fecha`)} /></td>
-                <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.hora`)} /></td>
+                 <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.nombres`)} placeholder="Nombre del citado" /></td>
+                 <td className="px-3 py-2">
+                   <select className="field" {...register(`citados.${index}.condicion`)}>
+                     <option>TESTIGO</option>
+                     <option>INVESTIGADO</option>
+                   </select>
+                 </td>
+                 <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.fecha`)} placeholder="DD/MM/AAAA" /></td>
+                 <td className="px-3 py-2"><input className="field" {...register(`citados.${index}.hora`)} placeholder="HH:MM" /></td>
                 <td className="px-3 py-2">
                   <Button type="button" variant="danger" className="h-9 w-9 px-0" onClick={() => remove(index)} disabled={fields.length === 1}>
                     <Trash2 className="h-4 w-4" />

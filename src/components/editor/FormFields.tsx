@@ -7,13 +7,15 @@ type FieldProps<T extends FieldValues> = {
   errors: FieldErrors<T>;
   textarea?: boolean;
   onInput?: React.FormEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  placeholder?: string;
 };
 
-export function Field<T extends FieldValues>({ label, name, register, errors, textarea, onInput }: FieldProps<T>) {
+export function Field<T extends FieldValues>({ label, name, register, errors, textarea, onInput, placeholder }: FieldProps<T>) {
   const error = errors[name]?.message as string | undefined;
   const common = {
     ...register(name),
     onInput,
+    placeholder,
     className: textarea ? "field min-h-28 resize-y" : "field",
   };
   return (
