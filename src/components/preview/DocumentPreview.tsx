@@ -66,7 +66,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
-          <img src={selloPng} alt="Sello" className="mt-8 h-[110px] w-[220px] object-contain" style={{ marginLeft: '-15px' }} />
+          <img src={selloPng} alt="Sello" className="mt-8 h-[110px] w-auto object-contain" style={{ marginLeft: '-15px' }} />
         </div>
       </div>
 
@@ -99,8 +99,8 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ol style={{ fontStyle: "italic", paddingLeft: "18px", marginTop: "4px", marginBottom: "4px", listStyleType: "decimal", listStylePosition: "outside" }}>
-        {items.map(item => <li key={item} style={{ paddingLeft: "4px", marginBottom: "4px" }}>{item}</li>)}
+      <ol style={{ fontStyle: "italic", paddingLeft: "32px", margin: 0, textAlign: "justify" }}>
+        {items.map(item => <li key={item} style={{ marginBottom: "6px" }}>{item}</li>)}
       </ol>
       <p>
         --- La investigación que practica este Departamento Desconcentrado de Investigación Contra la Corrupción de la
