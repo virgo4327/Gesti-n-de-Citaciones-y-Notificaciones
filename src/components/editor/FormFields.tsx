@@ -55,13 +55,14 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
     onBlur: handleBlur,
     className: textarea ? "field field-ghost min-h-28 resize-y" : "field field-ghost",
     "aria-label": label,
+    placeholder: focused ? placeholder : "",
   };
 
   return (
     <label className="ghost-field">
       {textarea ? <textarea {...inputProps} /> : <input {...inputProps} />}
       <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
-        {placeholder || label}
+        {label}
       </span>
       {error && <span className="error">{error}</span>}
     </label>
