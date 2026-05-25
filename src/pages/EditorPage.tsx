@@ -16,7 +16,7 @@ export default function EditorPage() {
   return (
     <>
       <Navbar />
-      <EditorLayout type={tipo} />
+      <EditorLayout key={tipo} type={tipo} />
     </>
   );
 }

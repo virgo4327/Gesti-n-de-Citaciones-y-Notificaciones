@@ -32,6 +32,7 @@ function GhostInput({ name, register, placeholder, type }: { name: string; regis
         onBlur={(e) => { setFocused(false); onBlur(e); }}
         className="field field-ghost"
         aria-label={placeholder}
+        placeholder={focused ? placeholder : ""}
       />
       <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
         {placeholder}
