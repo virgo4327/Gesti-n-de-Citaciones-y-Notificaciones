@@ -103,7 +103,7 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pdfHeight;
 
-      while (heightLeft > 0) {
+      while (heightLeft > 5) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);

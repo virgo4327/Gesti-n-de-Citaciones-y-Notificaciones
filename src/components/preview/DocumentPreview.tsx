@@ -40,7 +40,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── TÍTULO ── */}
       <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
-        <span style={{ borderBottom: '2.5px solid black', paddingBottom: '3px' }}>
+        <span style={{ borderBottom: '2.5px solid black', paddingBottom: '4px', display: 'inline-block' }}>
           {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
         </span>
       </h1>
@@ -99,8 +99,8 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ol style={{ fontStyle: "italic", paddingLeft: "24px", margin: 0, listStyleType: "decimal" }}>
-        {items.map(item => <li key={item} style={{ paddingLeft: "8px", marginBottom: "4px" }}>{item}</li>)}
+      <ol style={{ fontStyle: "italic", paddingLeft: "18px", marginTop: "4px", marginBottom: "4px", listStyleType: "decimal", listStylePosition: "outside" }}>
+        {items.map(item => <li key={item} style={{ paddingLeft: "4px", marginBottom: "4px" }}>{item}</li>)}
       </ol>
       <p>
         --- La investigación que practica este Departamento Desconcentrado de Investigación Contra la Corrupción de la
