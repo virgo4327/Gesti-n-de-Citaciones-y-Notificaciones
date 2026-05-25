@@ -33,17 +33,17 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           width: 'calc(100% - 40px)'
         }}
       >
-        <img src={logoPnp} alt="PNP" className="h-[100px] w-auto object-contain" />
-        <img src={encargadoPng} alt="Encargado" className="h-[37px] w-auto object-contain" />
+        <img src={logoPnp} alt="PNP" className="h-[115px] w-auto object-contain" />
+        <img src={encargadoPng} alt="Encargado" className="h-[45px] w-auto object-contain" />
       </div>
 
       {/* ── TÍTULO ── */}
-      <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8, textDecoration: 'underline', textDecorationThickness: '2.5px' }}>
+      <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8, textDecoration: 'underline', textDecorationThickness: '2.5px', textUnderlineOffset: '4px' }}>
         {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
       </h1>
 
       {/* ── DATOS ── */}
-      <div className="grid gap-1.5 mt-4 mb-6" style={{ fontFamily: "Arial, sans-serif", fontSize: 11, lineHeight: 1.5 }}>
+      <div className="grid gap-1.5 mt-4 mb-6" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.5 }}>
         <p><span style={{ display: "inline-block", width: 90, fontStyle: "italic", fontWeight: 600 }}>Señor (a)</span><span style={{ fontStyle: "italic" }}>:  {sanitizeForPdf(c.nombre)}</span></p>
         <p><span style={{ display: "inline-block", width: 90, fontStyle: "italic", fontWeight: 600 }}>Domicilio</span><span style={{ fontStyle: "italic" }}>:  {sanitizeForPdf(c.domicilio)}</span></p>
         <p><span style={{ display: "inline-block", width: 90, fontStyle: "italic", fontWeight: 600 }}>Referencia</span><span style={{ fontStyle: "italic" }}>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
@@ -54,16 +54,16 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── SELLO + ENTERADO ── */}
       <div className="mt-8 mb-36 flex items-start justify-between">
-        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 11, width: 190 }}>
+        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, width: 190 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           {["FIRMA","POST FIRMA","D.N.I. N°","FECHA/HORA","RELACIÓN","CELULAR"]
             .map(item => <p key={item} style={{ lineHeight: "1.6" }}>{item}: ......................</p>)}
         </div>
         <div className="text-center" style={{ width: 190 }}>
-          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 11 }}>
+          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
-          <img src={selloPng} alt="Sello" className="mt-8 h-[95px] w-[190px] object-contain" style={{ marginLeft: '-15px' }} />
+          <img src={selloPng} alt="Sello" className="mt-8 h-[110px] w-[220px] object-contain" style={{ marginLeft: '-15px' }} />
         </div>
       </div>
 
@@ -86,18 +86,18 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }) {
   const items = type === "testigo" ? legalItems.testigo : legalItems.investigado;
   return (
-    <div className="grid gap-2 text-justify" style={{ fontFamily: "Arial, sans-serif", fontSize: 11, lineHeight: 1.5 }}>
+    <div className="grid gap-2" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.5, textAlign: "justify", wordBreak: "break-word" }}>
       <p>
         --- Mediante la presente, se le <strong>CITA</strong> a Ud., para que comparezca ante el Despacho del
         Departamento Desconcentrado de Investigación Contra la Corrupción Iquitos (DEPDICC-IQTS), sito en la Av.
         Grau N°1840 - Iquitos, <em>{sanitizeForPdf(data.fechaDiligencia)}</em>, a horas <em>{sanitizeForPdf(data.hora)}</em>, con la finalidad de
         recepcionar su {type === "testigo" ? "declaración testimonial" : "manifestación"} con relación a la
         investigación seguida contra la presunta comisión del delito contra la Administración pública en la modalidad
-        de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>
+        de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ol className="ml-5 list-decimal" style={{ fontStyle: "italic" }}>
-        {items.map(item => <li key={item}>{item}</li>)}
+      <ol style={{ fontStyle: "italic", paddingLeft: "24px", margin: 0 }}>
+        {items.map(item => <li key={item} style={{ paddingLeft: "8px", marginBottom: "4px" }}>{item}</li>)}
       </ol>
       <p>
         --- La investigación que practica este Departamento Desconcentrado de Investigación Contra la Corrupción de la
@@ -123,8 +123,8 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
 /* ─── NOTIFICACIÓN ─── */
 function NotificationBody({ data }: { data: NotificacionData }) {
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 11, paddingLeft: '48px', paddingRight: '48px' }}>
-      <p className="mb-3 text-justify" style={{ fontSize: 11 }}>
+    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, paddingLeft: '48px', paddingRight: '48px', wordBreak: "break-word" }}>
+      <p className="mb-3" style={{ textAlign: "justify" }}>
         --- Mediante el presente, se le <strong>NOTIFICA</strong> a Ud., que personal policial encargado de las
         investigaciones, ha programado en el Departamento Desconcentrado de Investigación Contra la Corrupción -
         DEPDICC-IQTS (sito en la Av. Grau N° 1840 - Iquitos), las siguientes declaraciones testimoniales conforme
@@ -148,8 +148,8 @@ function NotificationBody({ data }: { data: NotificacionData }) {
             ))}
           </tbody>
         </table>
-      <p className="text-justify">
-        En la investigación en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
+      <p style={{ textAlign: "justify", marginTop: "12px" }}>
+        Las presentes diligencias se realizan en el marco de la investigación seguida en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
         <em>{sanitizeForPdf(data.delito)}</em>; en agravio del Estado Peruano.
       </p>
     </div>
