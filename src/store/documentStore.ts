@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { DocumentPayload, DocumentType, HistoryItem } from "../types";
+import { encryptData, decryptData } from "../lib/crypto";
 
 type Store = {
   drafts: Partial<Record<DocumentType, DocumentPayload>>;
@@ -18,7 +19,7 @@ export const useDocumentStore = create<Store>()(
       history: [],
       saveDraft: (type, payload) =>
         set((state) => ({ drafts: { ...state.drafts, [type]: payload } })),
-        addHistory: (type, payload) => {
+      addHistory: (type, payload) => {
         const item: HistoryItem = {
           id: crypto.randomUUID(),
           type,
@@ -39,6 +40,26 @@ export const useDocumentStore = create<Store>()(
           return { drafts };
         }),
     }),
-    { name: "depdicc-documentos" },
+    {
+      name: "depdicc-documentos",
+      storage: createJSONStorage(() => ({
+        getItem: async (name: string) => {
+          const raw = localStorage.getItem(name);
+          if (!raw) return null;
+          try {
+            return await decryptData(raw);
+          } catch {
+            return raw;
+          }
+        },
+        setItem: async (name: string, value: string) => {
+          const encrypted = await encryptData(value);
+          localStorage.setItem(name, encrypted);
+        },
+        removeItem: async (name: string) => {
+          localStorage.removeItem(name);
+        },
+      })),
+    },
   ),
 );

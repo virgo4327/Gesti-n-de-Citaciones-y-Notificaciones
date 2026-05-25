@@ -10,6 +10,7 @@ import { useDocumentStore } from "../../store/documentStore";
 import { documentDefaults } from "../../constants";
 import { documentLabels } from "../../types";
 import type { DocumentPayload, DocumentType } from "../../types";
+import { sanitizeFilename } from "../../lib/sanitize";
 import FormInvestigado, { type FormInvestigadoHandle } from "./FormInvestigado";
 import FormNotificacion, { type FormNotificacionHandle } from "./FormNotificacion";
 import FormTestigo, { type FormTestigoHandle } from "./FormTestigo";
@@ -109,7 +110,9 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
         heightLeft -= pdfHeight;
       }
 
-      pdf.save(`${documentData.numero}-${type}.pdf`);
+      const safeNumero = sanitizeFilename(documentData.numero);
+      const safeType = sanitizeFilename(type);
+      pdf.save(`${safeNumero}-${safeType}.pdf`);
 
       addHistory(type, documentData);
     } catch (e) {
