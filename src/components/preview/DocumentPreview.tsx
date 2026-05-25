@@ -99,9 +99,14 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ol style={{ fontStyle: "italic", paddingLeft: "32px", margin: 0, textAlign: "justify" }}>
-        {items.map(item => <li key={item} style={{ marginBottom: "6px" }}>{item}</li>)}
-      </ol>
+      <ul style={{ fontStyle: "italic", paddingLeft: "24px", margin: 0, listStyleType: "none", textAlign: "justify" }}>
+        {items.map(item => (
+          <li key={item} style={{ marginBottom: "6px", display: "flex" }}>
+            <span style={{ width: "16px", flexShrink: 0 }}>-</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
       <p>
         --- La investigación que practica este Departamento Desconcentrado de Investigación Contra la Corrupción de la
         PNP, (DEPDICC-IQUITOS) en relación a los hechos antes referidos, conforme a la apertura de investigación de la
