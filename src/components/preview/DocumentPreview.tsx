@@ -14,6 +14,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       className="doc-paper mx-auto bg-white shadow-soft" 
       style={{ 
         width: 794, 
+        minHeight: 1123,
         paddingTop: 132,      // 3.5 cm
         paddingLeft: 132,     // 3.5 cm
         paddingRight: 76,     // 2 cm
@@ -38,8 +39,10 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       </div>
 
       {/* ── TÍTULO ── */}
-      <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8, textDecoration: 'underline', textDecorationThickness: '2.5px', textUnderlineOffset: '4px' }}>
-        {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
+      <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
+        <span style={{ borderBottom: '2.5px solid black', paddingBottom: '3px' }}>
+          {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
+        </span>
       </h1>
 
       {/* ── DATOS ── */}
@@ -53,7 +56,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
       {/* ── SELLO + ENTERADO ── */}
-      <div className="mt-8 mb-36 flex items-start justify-between">
+      <div className="mt-8 mb-8 flex items-start justify-between">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, width: 190 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           {["FIRMA","POST FIRMA","D.N.I. N°","FECHA/HORA","RELACIÓN","CELULAR"]
@@ -96,7 +99,7 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ol style={{ fontStyle: "italic", paddingLeft: "24px", margin: 0 }}>
+      <ol style={{ fontStyle: "italic", paddingLeft: "24px", margin: 0, listStyleType: "decimal" }}>
         {items.map(item => <li key={item} style={{ paddingLeft: "8px", marginBottom: "4px" }}>{item}</li>)}
       </ol>
       <p>
