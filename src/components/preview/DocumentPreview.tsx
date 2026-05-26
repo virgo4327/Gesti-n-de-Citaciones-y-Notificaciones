@@ -2,11 +2,6 @@ import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData } fr
 import { suffix, legalItems } from "../../constants";
 import { sanitizeForPdf } from "../../lib/sanitize";
 
-const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
-const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
-const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
-const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
-
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
   const c = data as BaseCitation;
   return (
@@ -34,8 +29,8 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           width: 'calc(100% - 40px)'
         }}
       >
-        <img src={logoPnp} alt="PNP" className="h-[115px] w-auto object-contain" />
-        <img src={encargadoPng} alt="Encargado" className="h-[45px] w-auto object-contain" />
+        <span className="h-[115px] font-bold text-sm">PNP</span>
+        <span className="h-[45px] font-bold text-sm">Encargado</span>
       </div>
 
       {/* ── TÍTULO ── */}
@@ -66,11 +61,10 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
-          <div className="mt-8 w-[100px] h-[100px] ml-[0.5cm] rounded-full overflow-hidden"><img src={selloPng} alt="Sello" className="w-full h-full object-cover" /></div>
         </div>
       </div>
 
-      {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
+      {/* ── PIE DE PÁGINA ── */}
       <div 
         style={{ 
           position: 'absolute', 
@@ -79,7 +73,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           transform: 'translateX(-50%)'
         }}
       >
-        <img src={footerDoc} alt="Pie" className="h-[48px] w-[440px] object-contain" />
+        <span className="text-xs text-gray-500">Pie de página</span>
       </div>
     </div>
   );
