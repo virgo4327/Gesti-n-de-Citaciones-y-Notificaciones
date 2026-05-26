@@ -2,6 +2,11 @@ import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData } fr
 import { suffix, legalItems } from "../../constants";
 import { sanitizeForPdf } from "../../lib/sanitize";
 
+const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
+const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
+const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
+const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
+
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
   const c = data as BaseCitation;
   return (
@@ -18,6 +23,12 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         position: 'relative'
       }}
     >
+      {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
+      <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between' }}>
+        <img src={logoPnp} alt="PNP" style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />
+        <img src={encargadoPng} alt="Encargado" style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />
+      </div>
+
       {/* ── TÍTULO ── */}
         <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
           <span style={{ borderBottom: '2.5px solid black', paddingBottom: '12px', display: 'inline-block' }}>
@@ -35,14 +46,8 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
-      {/* ── FECHA + ENTERADO ── */}
-      <div className="mt-8 flex justify-between">
-        <div></div>
-        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
-        </p>
-      </div>
-      <div className="mt-8 flex justify-between">
+      {/* ── FECHA + SELLO + ENTERADO ── */}
+      <div className="mt-8 flex justify-between items-end">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p>FIRMA: ......................</p>
@@ -52,7 +57,17 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
-        <div></div>
+        <div style={{ textAlign: 'right' }}>
+          <img src={selloPng} alt="Sello" style={{ height: '100px', width: '100px', objectFit: 'contain', borderRadius: '50%' }} />
+          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12, marginTop: '8px' }}>
+            Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
+          </p>
+        </div>
+      </div>
+
+      {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
+      <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}>
+        <img src={footerDoc} alt="Pie" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
       </div>
     </div>
   );
