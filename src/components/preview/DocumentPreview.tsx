@@ -4,7 +4,6 @@ import { sanitizeForPdf } from "../../lib/sanitize";
 
 const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
 const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
-const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
 const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
 
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
@@ -24,9 +23,9 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       }}
     >
       {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
-      <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <img src={logoPnp} alt="PNP" style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />
-        <img src={encargadoPng} alt="Encargado" style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />
+      <div style={{ position: 'absolute', top: '25px', left: '30px', right: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <img src={logoPnp} alt="PNP" style={{ height: '70px', width: 'auto', objectFit: 'contain' }} />
+        <img src={encargadoPng} alt="Encargado" style={{ height: '35px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── TÍTULO ── */}
@@ -46,7 +45,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
-      {/* ── FECHA + SELLO + ENTERADO ── */}
+      {/* ── FECHA + ENTERADO ── */}
       <div className="mt-8 flex justify-between items-end">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
@@ -58,8 +57,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>CELULAR: ......................</p>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <img src={selloPng} alt="Sello" style={{ height: '100px', width: '100px', objectFit: 'contain', borderRadius: '50%' }} />
-          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12, marginTop: '8px' }}>
+          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
         </div>
@@ -67,7 +65,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
       <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}>
-        <img src={footerDoc} alt="Pie" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+        <img src={footerDoc} alt="Pie" style={{ height: '25px', width: 'auto', objectFit: 'contain' }} />
       </div>
     </div>
   );
