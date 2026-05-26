@@ -34,6 +34,26 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
+
+      {/* ── FECHA + ENTERADO ── */}
+      <div className="mt-8 flex justify-between">
+        <div></div>
+        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
+        </p>
+      </div>
+      <div className="mt-8 flex justify-between">
+        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+          <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
+          <p>FIRMA: ......................</p>
+          <p>POST FIRMA: ......................</p>
+          <p>D.N.I. N°: ......................</p>
+          <p>FECHA/HORA: ......................</p>
+          <p>RELACIÓN: ......................</p>
+          <p>CELULAR: ......................</p>
+        </div>
+        <div></div>
+      </div>
     </div>
   );
 }
