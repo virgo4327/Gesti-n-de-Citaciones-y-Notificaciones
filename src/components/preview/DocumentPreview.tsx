@@ -66,7 +66,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
-<div className="mt-8 w-[200px] h-[150px] rounded-full overflow-hidden"><img src={selloPng} alt="Sello" className="w-full h-full object-contain" /></div>
+<div className="mt-8 w-[300px] h-[120px] -ml-[1cm] rounded-full overflow-hidden"><img src={selloPng} alt="Sello" className="w-full h-full object-contain" /></div>
         </div>
       </div>
 
