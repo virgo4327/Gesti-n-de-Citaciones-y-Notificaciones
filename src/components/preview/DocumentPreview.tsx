@@ -18,21 +18,6 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         position: 'relative'
       }}
     >
-      {/* ── ENCABEZADO (dentro del margen superior) ── */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: '25px', 
-          left: '20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: 'calc(100% - 40px)'
-        }}
-      >
-        <span className="h-[115px] font-bold text-sm">PNP</span>
-        <span className="h-[45px] font-bold text-sm">Encargado</span>
-      </div>
-
       {/* ── TÍTULO ── */}
         <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
           <span style={{ borderBottom: '2.5px solid black', paddingBottom: '12px', display: 'inline-block' }}>
@@ -49,32 +34,6 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
-
-      {/* ── SELLO + ENTERADO ── */}
-      <div className="mt-8 mb-4 flex items-start justify-between">
-        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, width: 190 }}>
-          <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
-          {["FIRMA","POST FIRMA","D.N.I. N°","FECHA/HORA","RELACIÓN","CELULAR"]
-            .map(item => <p key={item} style={{ lineHeight: "1.6" }}>{item}: ......................</p>)}
-        </div>
-        <div className="text-right" style={{ width: 190 }}>
-          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-            Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
-          </p>
-        </div>
-      </div>
-
-      {/* ── PIE DE PÁGINA ── */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          bottom: '2px', 
-          left: '50%', 
-          transform: 'translateX(-50%)'
-        }}
-      >
-        <span className="text-xs text-gray-500">Pie de página</span>
-      </div>
     </div>
   );
 }
