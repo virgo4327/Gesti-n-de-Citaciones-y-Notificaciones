@@ -24,7 +24,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
     >
       {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
       <div style={{ position: 'absolute', top: '25px', left: '30px', right: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <img src={logoPnp} alt="PNP" style={{ height: '70px', width: 'auto', objectFit: 'contain' }} />
+        <img src={logoPnp} alt="PNP" style={{ height: '100px', width: 'auto', objectFit: 'contain' }} />
         <img src={encargadoPng} alt="Encargado" style={{ height: '35px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
@@ -45,8 +45,15 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
-      {/* ── FECHA + ENTERADO ── */}
-      <div className="mt-8 flex justify-between items-end">
+      {/* ── FECHA (después del Código Procesal Penal) ── */}
+      <div className="mt-4 flex justify-end">
+        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
+        </p>
+      </div>
+
+      {/* ── ENTERADO ── */}
+      <div className="mt-8">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p>FIRMA: ......................</p>
@@ -56,16 +63,11 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-            Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
-          </p>
-        </div>
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
       <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}>
-        <img src={footerDoc} alt="Pie" style={{ height: '25px', width: 'auto', objectFit: 'contain' }} />
+        <img src={footerDoc} alt="Pie" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
       </div>
     </div>
   );
