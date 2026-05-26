@@ -39,11 +39,11 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       </div>
 
       {/* ── TÍTULO ── */}
-      <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
-        <span style={{ borderBottom: '2.5px solid black', paddingBottom: '4px', display: 'inline-block' }}>
-          {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
-        </span>
-      </h1>
+        <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
+          <span style={{ borderBottom: '2.5px solid black', paddingBottom: '12px', display: 'inline-block' }}>
+            {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
+          </span>
+        </h1>
 
       {/* ── DATOS ── */}
       <div className="grid gap-1.5 mt-4 mb-6" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.5 }}>
@@ -56,7 +56,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
       {/* ── SELLO + ENTERADO ── */}
-      <div className="mt-8 mb-8 flex items-start justify-between">
+      <div className="mt-8 mb-4 flex items-start justify-between">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, width: 190 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           {["FIRMA","POST FIRMA","D.N.I. N°","FECHA/HORA","RELACIÓN","CELULAR"]
@@ -66,7 +66,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
-          <img src={selloPng} alt="Sello" className="mt-8 h-[110px] w-auto object-contain" style={{ marginLeft: '-15px' }} />
+          <img src={selloPng} alt="Sello" className="mt-8 h-[110px] w-[110px] object-contain" style={{ marginLeft: '-15px' }} />
         </div>
       </div>
 
@@ -99,10 +99,10 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ul style={{ fontStyle: "italic", paddingLeft: "24px", margin: 0, listStyleType: "none", textAlign: "justify" }}>
+      <ul style={{ fontStyle: "italic", paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
         {items.map(item => (
-          <li key={item} style={{ marginBottom: "6px", display: "flex" }}>
-            <span style={{ width: "16px", flexShrink: 0 }}>-</span>
+          <li key={item} style={{ marginBottom: "6px", display: "flex", alignItems: "center" }}>
+            <span style={{ width: "16px", flexShrink: 0, marginRight: "4px" }}>-</span>
             <span>{item}</span>
           </li>
         ))}
@@ -131,8 +131,8 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
 /* ─── NOTIFICACIÓN ─── */
 function NotificationBody({ data }: { data: NotificacionData }) {
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, paddingLeft: '48px', paddingRight: '48px', wordBreak: "break-word" }}>
-      <p className="mb-3" style={{ textAlign: "justify" }}>
+    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
+            <p className="mb-3" style={{ textAlign: "justify", margin: 0, marginBottom: "0.75rem" }}>
         --- Mediante el presente, se le <strong>NOTIFICA</strong> a Ud., que personal policial encargado de las
         investigaciones, ha programado en el Departamento Desconcentrado de Investigación Contra la Corrupción -
         DEPDICC-IQTS (sito en la Av. Grau N° 1840 - Iquitos), las siguientes declaraciones testimoniales conforme
@@ -156,7 +156,7 @@ function NotificationBody({ data }: { data: NotificacionData }) {
             ))}
           </tbody>
         </table>
-      <p style={{ textAlign: "justify", marginTop: "12px" }}>
+            <p style={{ textAlign: "justify", margin: 0, marginTop: "12px" }}>
         Las presentes diligencias se realizan en el marco de la investigación seguida en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
         <em>{sanitizeForPdf(data.delito)}</em>; en agravio del Estado Peruano.
       </p>
