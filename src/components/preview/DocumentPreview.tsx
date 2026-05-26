@@ -62,11 +62,11 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           {["FIRMA","POST FIRMA","D.N.I. N°","FECHA/HORA","RELACIÓN","CELULAR"]
             .map(item => <p key={item} style={{ lineHeight: "1.6" }}>{item}: ......................</p>)}
         </div>
-        <div className="text-right" style={{ width: 800 }}>
+        <div className="text-right" style={{ width: 190 }}>
           <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
             Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
           </p>
-          <img src={selloPng} alt="Sello" className="mt-8 h-[80px] w-[80px] object-contain" />
+          <img src={selloPng} alt="Sello" className="mt-8 h-[200px] w-[200px] object-contain" />
         </div>
       </div>
 
