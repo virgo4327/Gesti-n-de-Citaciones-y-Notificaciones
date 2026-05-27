@@ -54,7 +54,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       </div>
 
       {/* ── SELLO + ENTERADO ── */}
-      <div className="mt-4 flex justify-between">
+      <div className="mt-6 flex justify-between">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p>FIRMA: ......................</p>
@@ -64,7 +64,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
-        <img src={selloPng} alt="Sello" style={{ width: '180px', height: 'auto', objectFit: 'contain' }} />
+        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '20px' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
