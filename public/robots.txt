@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gesti-n-de-citaciones-y-notificacio.vercel.app/sitemap.xml
