@@ -4,7 +4,6 @@ import { sanitizeForPdf } from "../../lib/sanitize";
 
 const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
 const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
-const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
 const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
 
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
@@ -46,20 +45,8 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
-      {/* ── FECHA ── */}
-      <div className="mt-4 flex justify-end">
-        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
-        </p>
-      </div>
-
-      {/* ── SELLO ── */}
-      <div className="mt-4 flex justify-end">
-        <img src={selloPng} alt="Sello" style={{ width: '200px', height: 'auto', objectFit: 'contain' }} />
-      </div>
-
       {/* ── ENTERADO ── */}
-      <div className="mt-8">
+      <div className="mt-6">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p>FIRMA: ......................</p>
@@ -69,6 +56,13 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
+      </div>
+
+      {/* ── FECHA ── */}
+      <div className="mt-4 flex justify-end">
+        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
+        </p>
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
