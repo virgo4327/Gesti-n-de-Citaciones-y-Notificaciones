@@ -18,7 +18,7 @@ export interface FormNotificacionHandle {
 }
 
 const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, onValid }, ref) => {
-  const { register, handleSubmit, control, formState: { errors }, reset: formReset } = useForm<NotificacionSchema>({
+  const { register, handleSubmit, watch, control, getValues, setValue, formState: { errors }, reset: formReset } = useForm<NotificacionSchema>({
     resolver: zodResolver(notificacionSchema),
     defaultValues: { ...notificacionDefaults, ...initial },
   });
@@ -30,14 +30,14 @@ const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, o
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Número" name="numero" register={register} errors={errors} placeholder="Ej: 003" />
-        <Field label="Nombre completo" name="nombre" register={register} errors={errors} placeholder="Ej: CARLOS RAMÍREZ SÁNCHEZ" />
-        <Field label="Domicilio" name="domicilio" register={register} errors={errors} placeholder="Ej: Jr. Napo N° 789 - Iquitos" />
-        <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} errors={errors} placeholder="Ej: 2026-00789" />
-        <Field label="Delito/modalidad" name="delito" register={register} errors={errors} placeholder="Ej: COLUSIÓN" />
-        <Field label="Fecha de documento" name="fechaDocumento" register={register} errors={errors} type="date" placeholder="DD/MM/AAAA" />
+        <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 003" />
+        <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} placeholder="Ej: CARLOS RAMÍREZ SÁNCHEZ" />
+        <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} placeholder="Ej: Jr. Napo N° 789 - Iquitos" />
+        <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00789" />
+        <Field label="Delito/modalidad" name="delito" register={register} watch={watch} errors={errors} placeholder="Ej: COLUSIÓN" />
+        <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
       </div>
-      <TablaNotificacion control={control} register={register} errors={errors} />
+      <TablaNotificacion control={control} register={register} getValues={getValues} setValue={setValue} errors={errors} />
       <div className="flex gap-3 pt-4">
         <Button type="submit">Actualizar vista previa</Button>
       </div>

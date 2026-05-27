@@ -1,12 +1,14 @@
 import { useState, type ChangeEvent } from "react";
 import { Trash2 } from "lucide-react";
-import { useFieldArray, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
+import { useFieldArray, type Control, type FieldErrors, type UseFormRegister, type UseFormGetValues, type UseFormSetValue } from "react-hook-form";
 import type { NotificacionSchema } from "../../schemas/notificacionSchema";
 import { Button } from "../ui/button";
 
 type Props = {
   control: Control<NotificacionSchema>;
   register: UseFormRegister<NotificacionSchema>;
+  getValues: UseFormGetValues<NotificacionSchema>;
+  setValue: UseFormSetValue<NotificacionSchema>;
   errors: FieldErrors<NotificacionSchema>;
 };
 
@@ -41,22 +43,24 @@ function GhostInput({ name, register, placeholder }: { name: string; register: U
   );
 }
 
-function TableDateInput({ name, register, placeholder }: { name: string; register: UseFormRegister<NotificacionSchema>; placeholder: string }) {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-  const { onChange, onBlur, ref, ...rest } = register(name as never);
+type TableDateInputProps = {
+  name: string;
+  register: UseFormRegister<NotificacionSchema>;
+  getValues: UseFormGetValues<NotificacionSchema>;
+  setValue: UseFormSetValue<NotificacionSchema>;
+  placeholder: string;
+};
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.currentTarget.value);
-    onChange(e);
-  };
+function TableDateInput({ name, register, getValues, setValue, placeholder }: TableDateInputProps) {
+  const [open, setOpen] = useState(false);
+  const value = getValues(name as never) || "";
+  const { onChange, onBlur, ref, ...rest } = register(name as never);
 
   const handleDatePick = (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     if (raw) {
       const [yyyy, mm, dd] = raw.split("-");
       const formatted = `${dd}/${mm}/${yyyy}`;
-      setValue(formatted);
       const fakeEvent = { target: { value: formatted, name } } as ChangeEvent<HTMLInputElement>;
       onChange(fakeEvent);
     }
@@ -71,13 +75,14 @@ function TableDateInput({ name, register, placeholder }: { name: string; registe
           ref={ref}
           type="text"
           value={value}
-          onChange={handleChange}
           onFocus={() => setOpen(false)}
           onBlur={onBlur}
           className="field field-ghost"
           aria-label={placeholder}
           placeholder={value ? "" : placeholder}
           maxLength={10}
+          readOnly
+          onClick={() => setOpen(!open)}
         />
         <button
           type="button"
@@ -107,15 +112,18 @@ function TableDateInput({ name, register, placeholder }: { name: string; registe
   );
 }
 
-function TableTimeInput({ name, register, placeholder }: { name: string; register: UseFormRegister<NotificacionSchema>; placeholder: string }) {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-  const { onChange, onBlur, ref, ...rest } = register(name as never);
+type TableTimeInputProps = {
+  name: string;
+  register: UseFormRegister<NotificacionSchema>;
+  getValues: UseFormGetValues<NotificacionSchema>;
+  setValue: UseFormSetValue<NotificacionSchema>;
+  placeholder: string;
+};
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.currentTarget.value);
-    onChange(e);
-  };
+function TableTimeInput({ name, register, getValues, setValue, placeholder }: TableTimeInputProps) {
+  const [open, setOpen] = useState(false);
+  const value = getValues(name as never) || "";
+  const { onChange, onBlur, ref, ...rest } = register(name as never);
 
   const hours: string[] = [];
   for (let h = 0; h < 24; h++) {
@@ -132,13 +140,14 @@ function TableTimeInput({ name, register, placeholder }: { name: string; registe
           ref={ref}
           type="text"
           value={value}
-          onChange={handleChange}
           onFocus={() => setOpen(false)}
           onBlur={onBlur}
           className="field field-ghost"
           aria-label={placeholder}
           placeholder={value ? "" : placeholder}
           maxLength={5}
+          readOnly
+          onClick={() => setOpen(!open)}
         />
         <button
           type="button"
@@ -160,7 +169,6 @@ function TableTimeInput({ name, register, placeholder }: { name: string; registe
               type="button"
               className={`block w-full px-2 py-1 text-left text-xs hover:bg-police hover:text-white transition ${value === opt ? "bg-police text-white" : "text-slate-700"}`}
               onClick={() => {
-                setValue(opt);
                 const fakeEvent = { target: { value: opt, name } } as ChangeEvent<HTMLInputElement>;
                 onChange(fakeEvent);
                 setOpen(false);
@@ -175,7 +183,7 @@ function TableTimeInput({ name, register, placeholder }: { name: string; registe
   );
 }
 
-export default function TablaNotificacion({ control, register, errors }: Props) {
+export default function TablaNotificacion({ control, register, getValues, setValue, errors }: Props) {
   const { fields, append, remove } = useFieldArray({ control, name: "citados" });
   return (
     <div className="rounded-lg border bg-white">
@@ -211,10 +219,10 @@ export default function TablaNotificacion({ control, register, errors }: Props) 
                   </select>
                 </td>
                 <td className="px-3 py-2">
-                  <TableDateInput name={`citados.${index}.fecha`} register={register} placeholder="DD/MM/AAAA" />
+                  <TableDateInput name={`citados.${index}.fecha`} register={register} getValues={getValues} setValue={setValue} placeholder="DD/MM/AAAA" />
                 </td>
                 <td className="px-3 py-2">
-                  <TableTimeInput name={`citados.${index}.hora`} register={register} placeholder="HH:MM" />
+                  <TableTimeInput name={`citados.${index}.hora`} register={register} getValues={getValues} setValue={setValue} placeholder="HH:MM" />
                 </td>
                 <td className="px-3 py-2">
                   <Button type="button" variant="danger" className="h-9 w-9 px-0" onClick={() => remove(index)} disabled={fields.length === 1}>

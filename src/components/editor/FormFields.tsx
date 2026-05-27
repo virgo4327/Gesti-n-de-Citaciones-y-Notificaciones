@@ -1,10 +1,11 @@
-import { useState, useEffect, type ChangeEvent } from "react";
-import type { FieldErrors, FieldValues, Path, UseFormRegister } from "react-hook-form";
+import { useState, type ChangeEvent } from "react";
+import type { FieldErrors, FieldValues, Path, UseFormRegister, UseFormWatch } from "react-hook-form";
 
 type FieldProps<T extends FieldValues> = {
   label: string;
   name: Path<T>;
   register: UseFormRegister<T>;
+  watch: UseFormWatch<T>;
   errors: FieldErrors<T>;
   textarea?: boolean;
   type?: "text" | "date" | "time";
@@ -16,11 +17,10 @@ type FieldProps<T extends FieldValues> = {
 type CalendarDateInputProps = {
   value: string;
   onChange: (v: string) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   placeholder?: string;
 };
 
-function CalendarDateInput({ value, onChange, onBlur, placeholder }: CalendarDateInputProps) {
+function CalendarDateInput({ value, onChange, placeholder }: CalendarDateInputProps) {
   const [open, setOpen] = useState(false);
 
   const handleDatePick = (e: ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +39,6 @@ function CalendarDateInput({ value, onChange, onBlur, placeholder }: CalendarDat
         className="field flex-1"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
         placeholder={placeholder}
         maxLength={10}
       />
@@ -72,11 +71,10 @@ function CalendarDateInput({ value, onChange, onBlur, placeholder }: CalendarDat
 type ClockTimeInputProps = {
   value: string;
   onChange: (v: string) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   placeholder?: string;
 };
 
-function ClockTimeInput({ value, onChange, onBlur, placeholder }: ClockTimeInputProps) {
+function ClockTimeInput({ value, onChange, placeholder }: ClockTimeInputProps) {
   const [open, setOpen] = useState(false);
 
   const hours: string[] = [];
@@ -93,7 +91,6 @@ function ClockTimeInput({ value, onChange, onBlur, placeholder }: ClockTimeInput
         className="field flex-1"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
         placeholder={placeholder}
         maxLength={5}
       />
@@ -126,23 +123,12 @@ function ClockTimeInput({ value, onChange, onBlur, placeholder }: ClockTimeInput
   );
 }
 
-export function Field<T extends FieldValues>({ label, name, register, errors, textarea, type, onInput, placeholder, className }: FieldProps<T>) {
+export function Field<T extends FieldValues>({ label, name, register, watch, errors, textarea, type, onInput, placeholder, className }: FieldProps<T>) {
   const error = errors[name]?.message as string | undefined;
   const [focused, setFocused] = useState(false);
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null;
-    if (el) {
-      const syncValue = () => setValue(el.value);
-      syncValue();
-      el.addEventListener("input", syncValue);
-      return () => el.removeEventListener("input", syncValue);
-    }
-  }, [name]);
+  const value = watch(name) || "";
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setValue(e.currentTarget.value);
     if (onInput) onInput(e);
   };
 
@@ -167,11 +153,9 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
         <CalendarDateInput
           value={value}
           onChange={(v) => {
-            setValue(v);
             const fakeEvent = { target: { value: v, name: name as string } } as unknown as React.FocusEvent<HTMLInputElement>;
             onChange(fakeEvent);
           }}
-          onBlur={onBlur}
           placeholder={placeholder}
         />
         <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
@@ -188,11 +172,9 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
         <ClockTimeInput
           value={value}
           onChange={(v) => {
-            setValue(v);
             const fakeEvent = { target: { value: v, name: name as string } } as unknown as React.FocusEvent<HTMLInputElement>;
             onChange(fakeEvent);
           }}
-          onBlur={onBlur}
           placeholder={placeholder}
         />
         <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
@@ -213,6 +195,7 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
     className: textarea ? "field field-ghost min-h-28 resize-y" : "field field-ghost",
     "aria-label": label,
     placeholder: focused ? placeholder : "",
+    defaultValue: value,
   };
 
   return (
