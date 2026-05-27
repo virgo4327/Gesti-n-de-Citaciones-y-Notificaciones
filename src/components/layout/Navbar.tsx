@@ -8,9 +8,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 bg-white shadow-sm">
-      <div className="hidden h-9 items-center justify-between bg-navy px-6 text-xs text-white md:flex lg:px-20">
-        <span className="font-semibold">PNP Perú</span>
-      </div>
       <nav className="flex h-[70px] items-center justify-between px-4 md:px-6 lg:px-20">
         <Link to="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-police text-white">
