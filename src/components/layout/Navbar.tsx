@@ -9,7 +9,6 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 bg-white shadow-sm">
       <div className="hidden h-9 items-center justify-between bg-navy px-6 text-xs text-white md:flex lg:px-20">
-        <span>Cel: 906758584&nbsp;&nbsp;|&nbsp;&nbsp;oficodcc.unidcc.iquitos@policia.gob.pe</span>
         <span className="font-semibold">PNP Perú</span>
       </div>
       <nav className="flex h-[70px] items-center justify-between px-4 md:px-6 lg:px-20">
