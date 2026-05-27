@@ -39,7 +39,7 @@ function CalendarDateInput({ value, onChange, placeholder, focused }: CalendarDa
         type="text"
         className="field flex-1"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        readOnly
         placeholder={focused ? placeholder : ""}
         maxLength={10}
       />
@@ -92,7 +92,7 @@ function ClockTimeInput({ value, onChange, placeholder, focused }: ClockTimeInpu
         type="text"
         className="field flex-1"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        readOnly
         placeholder={focused ? placeholder : ""}
         maxLength={5}
       />
