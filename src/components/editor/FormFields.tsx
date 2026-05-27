@@ -9,9 +9,10 @@ type FieldProps<T extends FieldValues> = {
   textarea?: boolean;
   onInput?: React.FormEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   placeholder?: string;
+  className?: string;
 };
 
-export function Field<T extends FieldValues>({ label, name, register, errors, textarea, onInput, placeholder }: FieldProps<T>) {
+export function Field<T extends FieldValues>({ label, name, register, errors, textarea, onInput, placeholder, className }: FieldProps<T>) {
   const error = errors[name]?.message as string | undefined;
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
@@ -59,7 +60,7 @@ export function Field<T extends FieldValues>({ label, name, register, errors, te
   };
 
   return (
-    <label className="ghost-field">
+    <label className={`ghost-field ${className ?? ""}`}>
       {textarea ? <textarea {...inputProps} /> : <input {...inputProps} />}
       <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
         {label}
