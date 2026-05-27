@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from "react";
 import { Trash2 } from "lucide-react";
-import { useFieldArray, type Control, type FieldErrors, type UseFormRegister, type UseFormGetValues, type UseFormSetValue } from "react-hook-form";
+import { useFieldArray, type Control, type FieldErrors, type UseFormRegister, type UseFormGetValues } from "react-hook-form";
 import type { NotificacionSchema } from "../../schemas/notificacionSchema";
 import { Button } from "../ui/button";
 
@@ -8,7 +8,6 @@ type Props = {
   control: Control<NotificacionSchema>;
   register: UseFormRegister<NotificacionSchema>;
   getValues: UseFormGetValues<NotificacionSchema>;
-  setValue: UseFormSetValue<NotificacionSchema>;
   errors: FieldErrors<NotificacionSchema>;
 };
 
@@ -47,13 +46,12 @@ type TableDateInputProps = {
   name: string;
   register: UseFormRegister<NotificacionSchema>;
   getValues: UseFormGetValues<NotificacionSchema>;
-  setValue: UseFormSetValue<NotificacionSchema>;
   placeholder: string;
 };
 
-function TableDateInput({ name, register, getValues, setValue, placeholder }: TableDateInputProps) {
+function TableDateInput({ name, register, getValues, placeholder }: TableDateInputProps) {
   const [open, setOpen] = useState(false);
-  const value = getValues(name as never) || "";
+  const value = (getValues(name as any) as string) || "";
   const { onChange, onBlur, ref, ...rest } = register(name as never);
 
   const handleDatePick = (e: ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +59,7 @@ function TableDateInput({ name, register, getValues, setValue, placeholder }: Ta
     if (raw) {
       const [yyyy, mm, dd] = raw.split("-");
       const formatted = `${dd}/${mm}/${yyyy}`;
-      const fakeEvent = { target: { value: formatted, name } } as ChangeEvent<HTMLInputElement>;
+      const fakeEvent = { target: { value: formatted, name } } as unknown as React.ChangeEvent<HTMLInputElement>;
       onChange(fakeEvent);
     }
     setOpen(false);
@@ -116,13 +114,12 @@ type TableTimeInputProps = {
   name: string;
   register: UseFormRegister<NotificacionSchema>;
   getValues: UseFormGetValues<NotificacionSchema>;
-  setValue: UseFormSetValue<NotificacionSchema>;
   placeholder: string;
 };
 
-function TableTimeInput({ name, register, getValues, setValue, placeholder }: TableTimeInputProps) {
+function TableTimeInput({ name, register, getValues, placeholder }: TableTimeInputProps) {
   const [open, setOpen] = useState(false);
-  const value = getValues(name as never) || "";
+  const value = (getValues(name as any) as string) || "";
   const { onChange, onBlur, ref, ...rest } = register(name as never);
 
   const hours: string[] = [];
@@ -169,7 +166,7 @@ function TableTimeInput({ name, register, getValues, setValue, placeholder }: Ta
               type="button"
               className={`block w-full px-2 py-1 text-left text-xs hover:bg-police hover:text-white transition ${value === opt ? "bg-police text-white" : "text-slate-700"}`}
               onClick={() => {
-                const fakeEvent = { target: { value: opt, name } } as ChangeEvent<HTMLInputElement>;
+                const fakeEvent = { target: { value: opt, name } } as unknown as React.ChangeEvent<HTMLInputElement>;
                 onChange(fakeEvent);
                 setOpen(false);
               }}
@@ -183,7 +180,7 @@ function TableTimeInput({ name, register, getValues, setValue, placeholder }: Ta
   );
 }
 
-export default function TablaNotificacion({ control, register, getValues, setValue, errors }: Props) {
+export default function TablaNotificacion({ control, register, getValues, errors }: Props) {
   const { fields, append, remove } = useFieldArray({ control, name: "citados" });
   return (
     <div className="rounded-lg border bg-white">
@@ -219,10 +216,10 @@ export default function TablaNotificacion({ control, register, getValues, setVal
                   </select>
                 </td>
                 <td className="px-3 py-2">
-                  <TableDateInput name={`citados.${index}.fecha`} register={register} getValues={getValues} setValue={setValue} placeholder="DD/MM/AAAA" />
+                  <TableDateInput name={`citados.${index}.fecha`} register={register} getValues={getValues} placeholder="DD/MM/AAAA" />
                 </td>
                 <td className="px-3 py-2">
-                  <TableTimeInput name={`citados.${index}.hora`} register={register} getValues={getValues} setValue={setValue} placeholder="HH:MM" />
+                  <TableTimeInput name={`citados.${index}.hora`} register={register} getValues={getValues} placeholder="HH:MM" />
                 </td>
                 <td className="px-3 py-2">
                   <Button type="button" variant="danger" className="h-9 w-9 px-0" onClick={() => remove(index)} disabled={fields.length === 1}>

@@ -18,7 +18,7 @@ export interface FormNotificacionHandle {
 }
 
 const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, onValid }, ref) => {
-  const { register, handleSubmit, watch, control, getValues, setValue, formState: { errors }, reset: formReset } = useForm<NotificacionSchema>({
+  const { register, handleSubmit, watch, control, getValues, formState: { errors }, reset: formReset } = useForm<NotificacionSchema>({
     resolver: zodResolver(notificacionSchema),
     defaultValues: { ...notificacionDefaults, ...initial },
   });
@@ -37,7 +37,7 @@ const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, o
         <Field label="Delito/modalidad" name="delito" register={register} watch={watch} errors={errors} placeholder="Ej: COLUSIÓN" />
         <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
       </div>
-      <TablaNotificacion control={control} register={register} getValues={getValues} setValue={setValue} errors={errors} />
+      <TablaNotificacion control={control} register={register} getValues={getValues} errors={errors} />
       <div className="flex gap-3 pt-4">
         <Button type="submit">Actualizar vista previa</Button>
       </div>
