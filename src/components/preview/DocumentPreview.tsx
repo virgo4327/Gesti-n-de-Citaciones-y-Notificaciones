@@ -4,6 +4,7 @@ import { sanitizeForPdf } from "../../lib/sanitize";
 
 const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
 const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
+const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
 const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
 
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
@@ -50,6 +51,11 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
         </p>
+      </div>
+
+      {/* ── SELLO ── */}
+      <div className="mt-4 flex justify-end">
+        <img src={selloPng} alt="Sello" style={{ width: '120px', height: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── ENTERADO ── */}
