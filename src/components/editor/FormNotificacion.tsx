@@ -35,7 +35,7 @@ const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, o
         <Field label="Domicilio" name="domicilio" register={register} errors={errors} placeholder="Ej: Jr. Napo N° 789 - Iquitos" />
         <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} errors={errors} placeholder="Ej: 2026-00789" />
         <Field label="Delito/modalidad" name="delito" register={register} errors={errors} placeholder="Ej: COLUSIÓN" />
-        <Field label="Fecha de documento" name="fechaDocumento" register={register} errors={errors} placeholder="DD/MM/AAAA" />
+        <Field label="Fecha de documento" name="fechaDocumento" register={register} errors={errors} type="date" placeholder="DD/MM/AAAA" />
       </div>
       <TablaNotificacion control={control} register={register} errors={errors} />
       <div className="flex gap-3 pt-4">
