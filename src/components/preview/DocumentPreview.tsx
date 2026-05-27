@@ -46,6 +46,18 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
+      {/* ── FECHA ── */}
+      <div className="mt-4 flex justify-end">
+        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
+        </p>
+      </div>
+
+      {/* ── SELLO ── */}
+      <div className="mt-4 flex justify-end">
+        <img src={selloPng} alt="Sello" style={{ width: '200px', height: 'auto', objectFit: 'contain' }} />
+      </div>
+
       {/* ── ENTERADO ── */}
       <div className="mt-8">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
@@ -57,18 +69,6 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
-      </div>
-
-      {/* ── FECHA (después del Código Procesal Penal) ── */}
-      <div className="mt-4 flex justify-end">
-        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
-        </p>
-      </div>
-
-      {/* ── SELLO ── */}
-      <div className="mt-4 flex justify-end">
-        <img src={selloPng} alt="Sello" style={{ width: '150px', height: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
