@@ -5,6 +5,7 @@ import { sanitizeForPdf } from "../../lib/sanitize";
 const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
 const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
 const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
+const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
 
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
   const c = data as BaseCitation;
@@ -52,8 +53,8 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         </p>
       </div>
 
-      {/* ── ENTERADO ── */}
-      <div className="mt-6">
+      {/* ── SELLO + ENTERADO ── */}
+      <div className="mt-4 flex justify-between">
         <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p>FIRMA: ......................</p>
@@ -63,6 +64,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
+        <img src={selloPng} alt="Sello" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
