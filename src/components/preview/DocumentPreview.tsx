@@ -64,7 +64,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p>RELACIÓN: ......................</p>
           <p>CELULAR: ......................</p>
         </div>
-        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '20px' }} />
+        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '30px', marginLeft: '-20px' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
