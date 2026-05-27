@@ -67,7 +67,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
       <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}>
-        <img src={footerDoc} alt="Pie" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+        <img src={footerDoc} alt="Pie" style={{ height: '55px', width: 'auto', objectFit: 'contain' }} />
       </div>
     </div>
   );
