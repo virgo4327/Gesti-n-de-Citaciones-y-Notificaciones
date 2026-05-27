@@ -136,14 +136,7 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
             <button onClick={() => setActiveTab("editor")} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "editor" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
               <PenLine className="h-4 w-4" /> Editor
             </button>
-            <button onClick={() => {
-              const form = document.getElementById("document-form") as HTMLFormElement;
-              if (form) {
-                form.requestSubmit();
-              } else {
-                setActiveTab("preview");
-              }
-            }} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "preview" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
+            <button onClick={() => setActiveTab("preview")} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "preview" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
               <Eye className="h-4 w-4" /> Vista Previa
             </button>
           </div>
