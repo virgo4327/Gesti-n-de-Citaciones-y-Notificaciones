@@ -18,9 +18,10 @@ type CalendarDateInputProps = {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  focused: boolean;
 };
 
-function CalendarDateInput({ value, onChange, placeholder }: CalendarDateInputProps) {
+function CalendarDateInput({ value, onChange, placeholder, focused }: CalendarDateInputProps) {
   const [open, setOpen] = useState(false);
 
   const handleDatePick = (e: ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +40,7 @@ function CalendarDateInput({ value, onChange, placeholder }: CalendarDateInputPr
         className="field flex-1"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={focused ? placeholder : ""}
         maxLength={10}
       />
       <button
@@ -72,9 +73,10 @@ type ClockTimeInputProps = {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  focused: boolean;
 };
 
-function ClockTimeInput({ value, onChange, placeholder }: ClockTimeInputProps) {
+function ClockTimeInput({ value, onChange, placeholder, focused }: ClockTimeInputProps) {
   const [open, setOpen] = useState(false);
 
   const hours: string[] = [];
@@ -91,7 +93,7 @@ function ClockTimeInput({ value, onChange, placeholder }: ClockTimeInputProps) {
         className="field flex-1"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={focused ? placeholder : ""}
         maxLength={5}
       />
       <button
@@ -157,6 +159,7 @@ export function Field<T extends FieldValues>({ label, name, register, watch, err
             onChange(fakeEvent);
           }}
           placeholder={placeholder}
+          focused={focused}
         />
         <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
           {label}
@@ -176,6 +179,7 @@ export function Field<T extends FieldValues>({ label, name, register, watch, err
             onChange(fakeEvent);
           }}
           placeholder={placeholder}
+          focused={focused}
         />
         <span className={`ghost-label ${hasValue ? "ghost-label-raised" : ""}`}>
           {label}
@@ -195,7 +199,6 @@ export function Field<T extends FieldValues>({ label, name, register, watch, err
     className: textarea ? "field field-ghost min-h-28 resize-y" : "field field-ghost",
     "aria-label": label,
     placeholder: focused ? placeholder : "",
-    defaultValue: value,
   };
 
   return (

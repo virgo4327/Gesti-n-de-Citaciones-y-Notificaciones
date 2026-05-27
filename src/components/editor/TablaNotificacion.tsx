@@ -51,6 +51,7 @@ type TableDateInputProps = {
 
 function TableDateInput({ name, register, getValues, placeholder }: TableDateInputProps) {
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const value = (getValues(name as any) as string) || "";
   const { onChange, onBlur, ref, ...rest } = register(name as never);
 
@@ -73,11 +74,11 @@ function TableDateInput({ name, register, getValues, placeholder }: TableDateInp
           ref={ref}
           type="text"
           value={value}
-          onFocus={() => setOpen(false)}
-          onBlur={onBlur}
+          onFocus={() => { setOpen(false); setFocused(true); }}
+          onBlur={(e) => { setFocused(false); onBlur(e); }}
           className="field field-ghost"
           aria-label={placeholder}
-          placeholder={value ? "" : placeholder}
+          placeholder={focused ? placeholder : ""}
           maxLength={10}
           readOnly
           onClick={() => setOpen(!open)}
@@ -119,6 +120,7 @@ type TableTimeInputProps = {
 
 function TableTimeInput({ name, register, getValues, placeholder }: TableTimeInputProps) {
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const value = (getValues(name as any) as string) || "";
   const { onChange, onBlur, ref, ...rest } = register(name as never);
 
@@ -137,11 +139,11 @@ function TableTimeInput({ name, register, getValues, placeholder }: TableTimeInp
           ref={ref}
           type="text"
           value={value}
-          onFocus={() => setOpen(false)}
-          onBlur={onBlur}
+          onFocus={() => { setOpen(false); setFocused(true); }}
+          onBlur={(e) => { setFocused(false); onBlur(e); }}
           className="field field-ghost"
           aria-label={placeholder}
-          placeholder={value ? "" : placeholder}
+          placeholder={focused ? placeholder : ""}
           maxLength={5}
           readOnly
           onClick={() => setOpen(!open)}
