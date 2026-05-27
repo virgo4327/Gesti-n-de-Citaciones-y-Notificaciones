@@ -29,8 +29,8 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       </div>
 
       {/* ── TÍTULO ── */}
-        <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 8, marginTop: 8 }}>
-          <span style={{ borderBottom: '2.5px solid black', paddingBottom: '12px', display: 'inline-block' }}>
+        <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 4, marginTop: 8 }}>
+          <span style={{ borderBottom: '2px solid black', paddingBottom: '6px', display: 'inline-block' }}>
             {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
           </span>
         </h1>
