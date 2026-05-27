@@ -12,6 +12,7 @@ function PageFallback() {
 const Home = lazy(() => import("./pages/Home"));
 const EditorPageLazy = lazy(() => import("./pages/EditorPage"));
 const HistorialPageLazy = lazy(() => import("./pages/HistorialPage"));
+const AgendaPageLazy = lazy(() => import("./pages/AgendaPage"));
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/" element={<><Suspense fallback={<PageFallback />}><Home /></Suspense></>} />
         <Route path="/editor/:tipo" element={<><Suspense fallback={<PageFallback />}><EditorPageLazy /></Suspense></>} />
         <Route path="/historial" element={<><Suspense fallback={<PageFallback />}><HistorialPageLazy /></Suspense></>} />
+        <Route path="/agenda" element={<><Suspense fallback={<PageFallback />}><AgendaPageLazy /></Suspense></>} />
       </Routes>
     </Suspense>
   );

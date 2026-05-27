@@ -5,6 +5,7 @@ import {
   Pencil,
   Trash2,
   FileText,
+  CalendarDays,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -75,6 +76,11 @@ export default function OperationalDashboard() {
               <Button asChild variant="secondary" className="border border-slate-200">
                 <Link to="/historial">
                   <History className="h-4 w-4" /> Historial
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" className="border border-slate-200">
+                <Link to="/agenda">
+                  <CalendarDays className="h-4 w-4" /> Agenda
                 </Link>
               </Button>
             </div>

@@ -1,4 +1,4 @@
-import { Download, Eye, PenLine, Save, Eraser } from "lucide-react";
+import { Download, Eye, PenLine, Save, Eraser, AlertTriangle } from "lucide-react";
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -14,22 +14,25 @@ import { sanitizeFilename } from "../../lib/sanitize";
 import FormInvestigado, { type FormInvestigadoHandle } from "./FormInvestigado";
 import FormNotificacion, { type FormNotificacionHandle } from "./FormNotificacion";
 import FormTestigo, { type FormTestigoHandle } from "./FormTestigo";
+import { detectarConflictos, type Conflicto } from "../../lib/schedule";
 
 type FormHandle = FormInvestigadoHandle | FormTestigoHandle | FormNotificacionHandle;
 
 export default function EditorLayout({ type }: { type: DocumentType }) {
   const saveDraft  = useDocumentStore((s) => s.saveDraft);
   const addHistory = useDocumentStore((s) => s.addHistory);
+  const history    = useDocumentStore((s) => s.history);
   const drafts     = useDocumentStore((s) => s.drafts);
 
   const formRef = useRef<FormHandle>(null);
 
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
-  const [documentData, setDocumentData] = useState<DocumentPayload>(() => 
+  const [documentData, setDocumentData] = useState<DocumentPayload>(() =>
     drafts[type] ?? documentDefaults[type]
   );
   const [generating, setGenerating] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [conflictos, setConflictos] = useState<Conflicto[] | null>(null);
 
   const handleValid = (data: DocumentPayload) => {
     setDocumentData(data);
@@ -43,12 +46,36 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
     }
   };
 
-  const handleClear = () => {
-    formRef.current?.reset();
-    setDocumentData(documentDefaults[type]);
+  const verificarConflictos = (): boolean => {
+    let nombre = "";
+    let fecha = "";
+    let hora = "";
+
+    if (type === "investigado" || type === "testigo") {
+      const d = documentData as { nombre: string; fechaDiligencia: string; hora: string };
+      nombre = d.nombre;
+      fecha = d.fechaDiligencia;
+      hora = d.hora;
+    } else if (type === "notificacion") {
+      const d = documentData as { nombre: string; citados: { nombres: string; fecha: string; hora: string }[] };
+      if (d.citados && d.citados.length > 0) {
+        nombre = d.nombre;
+        fecha = d.citados[0].fecha;
+        hora = d.citados[0].hora;
+      }
+    }
+
+    if (!nombre || !fecha || !hora) return false;
+
+    const found = detectarConflictos(nombre, fecha, hora, history);
+    if (found.length > 0) {
+      setConflictos(found);
+      return true;
+    }
+    return false;
   };
 
-  const handleGeneratePdf = async () => {
+  const executePdfGeneration = async () => {
     setGenerating(true);
 
     try {
@@ -123,6 +150,26 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
     }
   };
 
+  const handleGeneratePdf = () => {
+    if (!verificarConflictos()) {
+      executePdfGeneration();
+    }
+  };
+
+  const handleConfirmGenerate = () => {
+      setConflictos(null);
+      executePdfGeneration();
+  };
+
+  const handleCancelGenerate = () => {
+    setConflictos(null);
+  };
+
+  const handleClear = () => {
+    formRef.current?.reset();
+    setDocumentData(documentDefaults[type]);
+  };
+
   return (
     <main className="lg:flex">
       <Sidebar />
@@ -193,6 +240,60 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
           </div>
         )}
       </section>
+
+      {conflictos && conflictos.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Conflicto de horario detectado</h3>
+                <p className="text-sm text-slate-500">Se encontraron coincidencias en el historial</p>
+              </div>
+            </div>
+            <div className="mb-4 max-h-60 overflow-y-auto rounded-md border">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-100 text-xs uppercase text-slate-600">
+                  <tr>
+                    <th className="px-3 py-2">Tipo</th>
+                    <th className="px-3 py-2">N°</th>
+                    <th className="px-3 py-2">Nombre</th>
+                    <th className="px-3 py-2">Detalle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {conflictos.map((c, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-3 py-2">
+                        <span className={`inline-block rounded px-2 py-0.5 text-xs font-bold ${c.tipo === "exacto" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>
+                          {c.tipo === "exacto" ? "Exacto" : "Cercano"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 font-bold">{c.registro.numero}</td>
+                      <td className="px-3 py-2">{c.registro.nombre}</td>
+                      <td className="px-3 py-2 text-slate-500">
+                        {c.tipo === "exacto"
+                          ? `Misma fecha y hora`
+                          : `${c.minutosDiferencia} min de diferencia`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" className="border border-slate-200" onClick={handleCancelGenerate}>
+                Cancelar
+              </Button>
+              <Button onClick={handleConfirmGenerate}>
+                Generar de todas formas
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

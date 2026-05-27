@@ -34,6 +34,7 @@ export default function Navbar() {
             </div>
           </div>
           <NavLink to="/historial" className={({ isActive }) => (isActive ? "text-police" : "hover:text-police")}>Historial</NavLink>
+          <NavLink to="/agenda" className={({ isActive }) => (isActive ? "text-police" : "hover:text-police")}>Agenda</NavLink>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild className="hidden lg:inline-flex">
@@ -46,7 +47,7 @@ export default function Navbar() {
       </nav>
       {open && (
         <div className="border-t bg-white px-4 py-3 lg:hidden">
-          {[["Inicio", "/"], ...documents.map(d => [d.label, d.href] as const), ["Historial", "/historial"]].map(([label, href]) => (
+          {[["Inicio", "/"], ...documents.map(d => [d.label, d.href] as const), ["Historial", "/historial"], ["Agenda", "/agenda"]].map(([label, href]) => (
             <Link key={href} to={href} onClick={() => setOpen(false)} className="block rounded-md px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100">
               {label}
             </Link>

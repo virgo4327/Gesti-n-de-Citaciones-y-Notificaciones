@@ -1,5 +1,5 @@
 import type { BaseCitation, DocumentPayload, DocumentType } from "./types";
-import { FileText, Users, Bell, ClipboardList } from "lucide-react";
+import { FileText, Users, Bell, ClipboardList, CalendarDays } from "lucide-react";
 import { investigadoDefaults, testigoDefaults, notificacionDefaults } from "./store/documentDefaults";
 
 export const suffix = "-2026-COMOPPOL/DIRNIC-DIRCOCOR-DIVINCAP-DEPDICC-IQTS";
@@ -7,7 +7,7 @@ export const suffix = "-2026-COMOPPOL/DIRNIC-DIRCOCOR-DIVINCAP-DEPDICC-IQTS";
 export type CommonFields = Pick<BaseCitation, "numero" | "nombre" | "domicilio" | "carpetaFiscal" | "fechaDocumento">;
 
 export type DocConfigItem = {
-  key: DocumentType | "historial";
+  key: DocumentType | "historial" | "agenda";
   label: string;
   href: string;
   icon: typeof FileText;
@@ -27,6 +27,7 @@ export const moduleData = documents.filter((d): d is Extract<DocConfigItem, { ke
 export const sidebarItems: DocConfigItem[] = [
   ...documents,
   { key: "historial",  label: "Historial",  href: "/historial",  icon: ClipboardList, color: "slate" },
+  { key: "agenda",  label: "Agenda de Citas",  href: "/agenda",  icon: CalendarDays, color: "slate" },
 ];
 
 export const documentDefaults: Record<DocumentType, DocumentPayload> = {
