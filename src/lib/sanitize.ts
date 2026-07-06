@@ -22,6 +22,20 @@ export function formatForPdf(value: string): string {
   return [...firstNames, ...lastNames].join(" ");
 }
 
+const MONTHS = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+];
+
+export function formatearFechaDocumento(fecha: string): string {
+  const sanitized = fecha.trim();
+  const match = sanitized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return sanitized;
+  const [, dia, mes, anio] = match;
+  const nombreMes = MONTHS[parseInt(mes, 10) - 1] || mes;
+  return `${dia} de ${nombreMes} de ${anio}`;
+}
+
 export function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9_\-.]/g, "_").replace(/_{2,}/g, "_");
 }

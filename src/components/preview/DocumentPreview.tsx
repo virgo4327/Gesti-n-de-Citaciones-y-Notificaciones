@@ -1,6 +1,6 @@
 import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData } from "../../types";
 import { suffix, legalItems } from "../../constants";
-import { sanitizeForPdf, formatForPdf } from "../../lib/sanitize";
+import { sanitizeForPdf, formatForPdf, formatearFechaDocumento } from "../../lib/sanitize";
 
 const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
 const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
@@ -49,7 +49,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       {/* ── FECHA ── */}
       <div className="mt-4 flex justify-end">
         <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-          Iquitos, <em>{sanitizeForPdf(c.fechaDocumento)}</em> del 2026.
+          Iquitos, {formatearFechaDocumento(sanitizeForPdf(c.fechaDocumento))}.
         </p>
       </div>
 
