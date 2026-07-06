@@ -51,17 +51,15 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
     }
   };
 
-  // Al hacer clic en "Vista Previa", primero dispara el submit del form
-  // para capturar los valores actuales antes de cambiar de pestaña.
+  // Al hacer clic en "Vista Previa", primero captura los valores actuales
+  // del formulario y cambia de pestaña sin depender de validación.
   const handleTabChange = (tab: "editor" | "preview") => {
     if (tab === "preview" && activeTab === "editor") {
-      setPendingTab("preview");
-      const form = document.getElementById("document-form") as HTMLFormElement;
-      if (form) {
-        form.requestSubmit();
-      } else {
-        setActiveTab("preview");
+      const data = getFormValues();
+      if (data) {
+        setDocumentData(data);
       }
+      setActiveTab("preview");
     } else {
       setActiveTab(tab);
     }
