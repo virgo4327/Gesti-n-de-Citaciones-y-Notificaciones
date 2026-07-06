@@ -89,7 +89,7 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         de {sanitizeForPdf(data.delito)}, en agravio del Estado Peruano - {sanitizeForPdf(data.agraviado)}, {sanitizeForPdf(data.descripcionHecho)}.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
-      <ul style={{ fontStyle: "italic", paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
+      <ul style={{ paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
         {items.map(item => (
           <li key={item} style={{ marginBottom: "6px", display: "flex", alignItems: "center" }}>
             <span style={{ width: "16px", flexShrink: 0, marginRight: "4px" }}>-</span>
@@ -137,11 +137,11 @@ function NotificationBody({ data }: { data: NotificacionData }) {
           <tbody>
             {data.citados.map((row, i) => (
               <tr key={row.id}>
-                <td className="border border-black px-3 py-1 italic">{i + 1}</td>
-                <td className="border border-black px-3 py-1 italic">{sanitizeForPdf(row.nombres)}</td>
-                <td className="border border-black px-3 py-1 italic">{sanitizeForPdf(row.condicion)}</td>
-                <td className="border border-black px-3 py-1 italic">{sanitizeForPdf(row.fecha)}</td>
-                <td className="border border-black px-3 py-1 italic">{sanitizeForPdf(row.hora)}</td>
+                 <td className="border border-black px-3 py-1">{i + 1}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.nombres)}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.condicion)}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.fecha)}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.hora)}</td>
               </tr>
             ))}
           </tbody>

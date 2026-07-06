@@ -11,13 +11,30 @@ type Props = {
   errors: FieldErrors<NotificacionSchema>;
 };
 
-function GhostInput({ name, register, placeholder }: { name: string; register: UseFormRegister<NotificacionSchema>; placeholder: string }) {
+function GhostInput({ name, register, placeholder, formatName }: { name: string; register: UseFormRegister<NotificacionSchema>; placeholder: string; formatName?: boolean }) {
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
   const { onChange, onBlur, ref, ...rest } = register(name as never);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.currentTarget.value);
+    let value = e.currentTarget.value;
+    if (formatName) {
+      const lowers = value.toLowerCase();
+      const parts = lowers.trim().split(/\s+/);
+      if (parts.length > 2) {
+        const first = parts.slice(0, -2).join(" ");
+        const last = parts.slice(-2).map(p => p.toUpperCase()).join(" ");
+        value = `${first} ${last}`;
+      } else if (parts.length === 2) {
+        value = `${parts[0]} ${parts[1].toUpperCase()}`;
+      } else if (parts.length === 1) {
+        value = lowers;
+      }
+    } else {
+      value = value.toLowerCase();
+    }
+    setValue(value);
+    onChange({ ...e, target: { ...e.target, value } } as unknown as React.ChangeEvent<HTMLInputElement>);
   };
 
   const hasValue = value.length > 0 || focused;
@@ -28,7 +45,7 @@ function GhostInput({ name, register, placeholder }: { name: string; register: U
         {...rest}
         ref={ref}
         type="text"
-        onChange={(e) => { handleChange(e); onChange(e); }}
+        onChange={(e) => { handleChange(e); }}
         onFocus={() => setFocused(true)}
         onBlur={(e) => { setFocused(false); onBlur(e); }}
         className="field field-ghost"
@@ -209,7 +226,7 @@ export default function TablaNotificacion({ control, register, getValues, errors
               <tr key={field.id} className="border-t">
                 <td className="px-3 py-2 font-bold">{index + 1}</td>
                 <td className="px-3 py-2">
-                  <GhostInput name={`citados.${index}.nombres`} register={register} placeholder="Nombre del citado" />
+                  <GhostInput name={`citados.${index}.nombres`} register={register} placeholder="Nombre del citado" formatName={true} />
                 </td>
                 <td className="px-3 py-2">
                   <select className="field" {...register(`citados.${index}.condicion`)}>

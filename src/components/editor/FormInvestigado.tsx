@@ -34,11 +34,31 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
     event.currentTarget.value = event.currentTarget.value.toLowerCase();
   };
 
+  const formatNameInput = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const el = event.currentTarget;
+    const raw = el.value;
+    const lowers = raw.toLowerCase();
+    const parts = lowers.trim().split(/\s+/);
+    let formatted: string;
+    if (parts.length > 2) {
+      const first = parts.slice(0, -2).join(" ");
+      const last = parts.slice(-2).map(p => p.toUpperCase()).join(" ");
+      formatted = `${first} ${last}`;
+    } else if (parts.length === 2) {
+      formatted = `${parts[0]} ${parts[1].toUpperCase()}`;
+    } else if (parts.length === 1) {
+      formatted = lowers;
+    } else {
+      formatted = raw;
+    }
+    el.value = formatted;
+  };
+
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 001" />
-        <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: JUAN PÉREZ GARCÍA" />
+        <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="Ej: juan PÉREZ GARCÍA" />
         <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: Jr. Lima N° 123 - Iquitos" />
         <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00123" />
         <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />

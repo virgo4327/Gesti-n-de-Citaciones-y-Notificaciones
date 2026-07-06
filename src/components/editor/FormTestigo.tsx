@@ -34,14 +34,34 @@ const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, 
     event.currentTarget.value = event.currentTarget.value.toLowerCase();
   };
 
+  const formatNameInput = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const el = event.currentTarget;
+    const raw = el.value;
+    const lowers = raw.toLowerCase();
+    const parts = lowers.trim().split(/\s+/);
+    let formatted: string;
+    if (parts.length > 2) {
+      const first = parts.slice(0, -2).join(" ");
+      const last = parts.slice(-2).map(p => p.toUpperCase()).join(" ");
+      formatted = `${first} ${last}`;
+    } else if (parts.length === 2) {
+      formatted = `${parts[0]} ${parts[1].toUpperCase()}`;
+    } else if (parts.length === 1) {
+      formatted = lowers;
+    } else {
+      formatted = raw;
+    }
+    el.value = formatted;
+  };
+
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
        <div className="grid gap-4 md:grid-cols-2">
          <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 002" />
-          <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: MARÍA LÓPEZ TORRES" />
+          <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="Ej: maría LÓPEZ TORRES" />
           <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: Av. Grau N° 456 - Iquitos" />
           <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00456" />
-          <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="NOMBRES DE LOS INVESTIGADOS" />
+          <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="NOMBRES DE LOS INVESTIGADOS" />
           <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
           <Field label="Hora diligencia" name="hora" register={register} watch={watch} errors={errors} type="time" placeholder="HH:MM" />
           <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: PECULADO" />
