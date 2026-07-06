@@ -22,13 +22,13 @@ function GhostInput({ name, register, placeholder, formatName }: { name: string;
       const lowers = value.toLowerCase();
       const parts = lowers.trim().split(/\s+/);
       if (parts.length > 2) {
-        const first = parts.slice(0, -2).join(" ");
+        const first = parts.slice(0, -2).map(p => p[0].toUpperCase() + p.slice(1)).join(" ");
         const last = parts.slice(-2).map(p => p.toUpperCase()).join(" ");
         value = `${first} ${last}`;
       } else if (parts.length === 2) {
-        value = `${parts[0]} ${parts[1].toUpperCase()}`;
+        value = `${parts[0][0].toUpperCase() + parts[0].slice(1)} ${parts[1].toUpperCase()}`;
       } else if (parts.length === 1) {
-        value = lowers;
+        value = parts[0][0].toUpperCase() + parts[0].slice(1);
       }
     } else {
       value = value.toLowerCase();
@@ -226,7 +226,7 @@ export default function TablaNotificacion({ control, register, getValues, errors
               <tr key={field.id} className="border-t">
                 <td className="px-3 py-2 font-bold">{index + 1}</td>
                 <td className="px-3 py-2">
-                  <GhostInput name={`citados.${index}.nombres`} register={register} placeholder="Nombre del citado" formatName={true} />
+                  <GhostInput name={`citados.${index}.nombres`} register={register} placeholder="Nombre del citado, ej: Juan PÉREZ" formatName={true} />
                 </td>
                 <td className="px-3 py-2">
                   <select className="field" {...register(`citados.${index}.condicion`)}>

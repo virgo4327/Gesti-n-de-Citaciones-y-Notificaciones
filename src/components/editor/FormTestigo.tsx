@@ -41,13 +41,13 @@ const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, 
     const parts = lowers.trim().split(/\s+/);
     let formatted: string;
     if (parts.length > 2) {
-      const first = parts.slice(0, -2).join(" ");
+      const first = parts.slice(0, -2).map(p => p[0].toUpperCase() + p.slice(1)).join(" ");
       const last = parts.slice(-2).map(p => p.toUpperCase()).join(" ");
       formatted = `${first} ${last}`;
     } else if (parts.length === 2) {
-      formatted = `${parts[0]} ${parts[1].toUpperCase()}`;
+      formatted = `${parts[0][0].toUpperCase() + parts[0].slice(1)} ${parts[1].toUpperCase()}`;
     } else if (parts.length === 1) {
-      formatted = lowers;
+      formatted = parts[0][0].toUpperCase() + parts[0].slice(1);
     } else {
       formatted = raw;
     }
@@ -58,7 +58,7 @@ const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, 
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
        <div className="grid gap-4 md:grid-cols-2">
          <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 002" />
-          <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="Ej: maría LÓPEZ TORRES" />
+           <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="Ej: María LÓPEZ TORRES" />
           <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: Av. Grau N° 456 - Iquitos" />
           <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00456" />
           <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="NOMBRES DE LOS INVESTIGADOS" />
