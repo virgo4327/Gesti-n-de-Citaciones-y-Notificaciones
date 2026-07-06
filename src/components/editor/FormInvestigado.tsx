@@ -39,6 +39,8 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
         const current = form.getValues(name as keyof InvestigadoSchema) || "";
         const nextValue = next ? current.toUpperCase() : current.toLowerCase();
         form.setValue(name as keyof InvestigadoSchema, nextValue);
+        const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null;
+        if (el) el.value = nextValue;
       });
       return next;
     });
