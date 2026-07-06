@@ -51,6 +51,19 @@ const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, o
     el.value = formatted;
   };
 
+  const capitalizeWords = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const el = event.currentTarget;
+    const raw = el.value;
+    const parts = raw.split(/(\s+)/);
+    const formatted = parts.map(part => {
+      if (/^\s+$/.test(part)) return part;
+      if (/^[A-ZÁÉÍÓÚÑ]{2,}$/.test(part)) return part.toUpperCase();
+      if (/^L\.Q\.R\.R\.?$/i.test(part)) return "L.Q.R.R.";
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    }).join("");
+    el.value = formatted;
+  };
+
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-2">
@@ -58,7 +71,7 @@ const FormNotificacion = forwardRef<FormNotificacionHandle, Props>(({ initial, o
         <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="Ej: Carlos RAMÍREZ SÁNCHEZ" />
         <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} placeholder="Ej: Jr. Napo N° 789 - Iquitos" />
         <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00789" />
-        <Field label="Delito/modalidad" name="delito" register={register} watch={watch} errors={errors} placeholder="Ej: COLUSIÓN" />
+        <Field label="Delito/modalidad" name="delito" register={register} watch={watch} errors={errors} onInput={capitalizeWords} placeholder="Ej: COLUSIÓN" />
         <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
       </div>
        <TablaNotificacion control={control} register={register} getValues={formGetValues} errors={errors} />

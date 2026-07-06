@@ -54,6 +54,19 @@ const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, 
     el.value = formatted;
   };
 
+  const capitalizeWords = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const el = event.currentTarget;
+    const raw = el.value;
+    const parts = raw.split(/(\s+)/);
+    const formatted = parts.map(part => {
+      if (/^\s+$/.test(part)) return part;
+      if (/^[A-ZÁÉÍÓÚÑ]{2,}$/.test(part)) return part.toUpperCase();
+      if (/^L\.Q\.R\.R\.?$/i.test(part)) return "L.Q.R.R.";
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    }).join("");
+    el.value = formatted;
+  };
+
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
        <div className="grid gap-4 md:grid-cols-2">
@@ -61,11 +74,11 @@ const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, 
            <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="Ej: María LÓPEZ TORRES" />
           <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: Av. Grau N° 456 - Iquitos" />
           <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00456" />
-          <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={formatNameInput} placeholder="NOMBRES DE LOS INVESTIGADOS" />
+          <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={capitalizeWords} placeholder="NOMBRES DE LOS INVESTIGADOS" />
           <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
           <Field label="Hora diligencia" name="hora" register={register} watch={watch} errors={errors} type="time" placeholder="HH:MM" />
-          <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: PECULADO" />
-          <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: MUNICIPALIDAD PROVINCIAL" />
+          <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={capitalizeWords} placeholder="Ej: PECULADO" />
+          <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={capitalizeWords} placeholder="Ej: MUNICIPALIDAD PROVINCIAL" />
           <Field label="Descripción del hecho" name="descripcionHecho" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Describa los hechos investigados..." className="md:col-span-2" textarea />
          <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
        </div>

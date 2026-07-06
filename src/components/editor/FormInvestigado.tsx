@@ -34,6 +34,18 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
     event.currentTarget.value = event.currentTarget.value.toLowerCase();
   };
 
+  const capitalizeWords = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const el = event.currentTarget;
+    const raw = el.value;
+    const parts = raw.split(/(\s+)/);
+    const formatted = parts.map(part => {
+      if (/^\s+$/.test(part)) return part;
+      if (/^[A-ZÁÉÍÓÚÑ]{2,}$/.test(part) || /^L\.Q\.R\.R\.?$/i.test(part)) return part.toUpperCase();
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    }).join("");
+    el.value = formatted;
+  };
+
   const formatNameInput = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const el = event.currentTarget;
     const raw = el.value;
@@ -63,8 +75,8 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
         <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00123" />
         <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
         <Field label="Hora diligencia" name="hora" register={register} watch={watch} errors={errors} type="time" placeholder="HH:MM" />
-        <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: COLUSIÓN" />
-        <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: ESTADO PERUANO" />
+        <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={capitalizeWords} placeholder="Ej: COLUSIÓN" />
+        <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={capitalizeWords} placeholder="Ej: ESTADO PERUANO" />
         <Field label="Descripción del hecho" name="descripcionHecho" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Describa los hechos investigados..." className="md:col-span-2" textarea />
         <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
       </div>

@@ -19,17 +19,14 @@ function GhostInput({ name, register, placeholder, formatName }: { name: string;
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     let value = e.currentTarget.value;
     if (formatName) {
-      const lowers = value.toLowerCase();
-      const parts = lowers.trim().split(/\s+/);
-      if (parts.length > 2) {
-        const first = parts.slice(0, -2).map(p => p[0].toUpperCase() + p.slice(1)).join(" ");
-        const last = parts.slice(-2).map(p => p.toUpperCase()).join(" ");
-        value = `${first} ${last}`;
-      } else if (parts.length === 2) {
-        value = `${parts[0][0].toUpperCase() + parts[0].slice(1)} ${parts[1].toUpperCase()}`;
-      } else if (parts.length === 1) {
-        value = parts[0][0].toUpperCase() + parts[0].slice(1);
-      }
+      const parts = value.split(/(\s+)/);
+      const formatted = parts.map(part => {
+        if (/^\s+$/.test(part)) return part;
+        if (/^[A-ZÁÉÍÓÚÑ]{2,}$/.test(part)) return part.toUpperCase();
+        if (/^L\.Q\.R\.R\.?$/i.test(part)) return "L.Q.R.R.";
+        return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+      }).join("");
+      value = formatted;
     } else {
       value = value.toLowerCase();
     }
