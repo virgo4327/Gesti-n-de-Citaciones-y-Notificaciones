@@ -32,7 +32,17 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
 
   const [isUpper, setIsUpper] = useState(false);
 
-  const toggleCase = () => setIsUpper(prev => !prev);
+  const toggleCase = () => {
+    setIsUpper(prev => {
+      const next = !prev;
+      ['nombre', 'domicilio', 'delito', 'agraviado', 'descripcionHecho'].forEach(name => {
+        const current = form.getValues(name as keyof InvestigadoSchema) || "";
+        const nextValue = next ? current.toUpperCase() : current.toLowerCase();
+        form.setValue(name as keyof InvestigadoSchema, nextValue);
+      });
+      return next;
+    });
+  };
 
   const applyCase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const el = event.currentTarget;
