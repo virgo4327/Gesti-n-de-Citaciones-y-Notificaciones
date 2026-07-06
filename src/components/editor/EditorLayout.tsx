@@ -16,15 +16,21 @@ import FormNotificacion, { type FormNotificacionHandle } from "./FormNotificacio
 import FormTestigo, { type FormTestigoHandle } from "./FormTestigo";
 import { detectarConflictos, type Conflicto } from "../../lib/schedule";
 
-type FormHandle = FormInvestigadoHandle | FormTestigoHandle | FormNotificacionHandle;
-
 export default function EditorLayout({ type }: { type: DocumentType }) {
   const saveDraft  = useDocumentStore((s) => s.saveDraft);
   const addHistory = useDocumentStore((s) => s.addHistory);
   const history    = useDocumentStore((s) => s.history);
   const drafts     = useDocumentStore((s) => s.drafts);
 
-  const formRef = useRef<FormHandle>(null);
+  const formRefInvestigado = useRef<FormInvestigadoHandle>(null);
+  const formRefTestigo = useRef<FormTestigoHandle>(null);
+  const formRefNotificacion = useRef<FormNotificacionHandle>(null);
+
+  const getFormValues = () => {
+    if (type === "investigado") return formRefInvestigado.current?.getValues();
+    if (type === "testigo") return formRefTestigo.current?.getValues();
+    return formRefNotificacion.current?.getValues();
+  };
 
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
   const [pendingTab, setPendingTab] = useState<"editor" | "preview" | null>(null);
@@ -32,17 +38,12 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
     drafts[type] ?? documentDefaults[type]
   );
   const [generating, setGenerating] = useState(false);
-  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [conflictos, setConflictos] = useState<Conflicto[] | null>(null);
 
   const handleValid = (data: DocumentPayload) => {
     setDocumentData(data);
 
-    if (isSavingDraft) {
-      saveDraft(type, data);
-      alert("Borrador guardado correctamente");
-      setIsSavingDraft(false);
-    } else if (pendingTab) {
+    if (pendingTab) {
       setActiveTab(pendingTab);
       setPendingTab(null);
     } else {
@@ -186,7 +187,9 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
   };
 
   const handleClear = () => {
-    formRef.current?.reset();
+    formRefInvestigado.current?.reset();
+    formRefTestigo.current?.reset();
+    formRefNotificacion.current?.reset();
     setDocumentData(documentDefaults[type]);
   };
 
@@ -211,9 +214,9 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
 
         {activeTab === "editor" && (
           <div className="rounded-lg border bg-white p-5 shadow-sm">
-            {type === "investigado"  && <FormInvestigado  ref={formRef} initial={documentData as InvestigadoData}   onValid={handleValid} />}
-            {type === "testigo"      && <FormTestigo      ref={formRef} initial={documentData as TestigoData}        onValid={handleValid} />}
-            {type === "notificacion" && <FormNotificacion ref={formRef} initial={documentData as NotificacionData}   onValid={handleValid} />}
+            {type === "investigado"  && <FormInvestigado  ref={formRefInvestigado} initial={documentData as InvestigadoData}   onValid={handleValid} />}
+            {type === "testigo"      && <FormTestigo      ref={formRefTestigo} initial={documentData as TestigoData}        onValid={handleValid} />}
+            {type === "notificacion" && <FormNotificacion ref={formRefNotificacion} initial={documentData as NotificacionData}   onValid={handleValid} />}
 
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <Button
@@ -226,15 +229,13 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
                 variant="secondary"
                 className="border border-slate-200"
                 onClick={() => {
-                  setIsSavingDraft(true);
-                  const form = document.getElementById("document-form") as HTMLFormElement;
-                  if (form) {
-                    form.requestSubmit();
+                  const data = getFormValues();
+                  if (data) {
+                    saveDraft(type, data);
                   } else {
                     saveDraft(type, documentData);
-                    alert("Borrador guardado");
-                    setIsSavingDraft(false);
                   }
+                  alert("Borrador guardado correctamente");
                 }}
               >
                 <Save className="h-4 w-4" /> Guardar borrador

@@ -15,16 +15,20 @@ type Props = {
 
 export interface FormInvestigadoHandle {
   reset: () => void;
+  getValues: () => InvestigadoSchema;
 }
 
 const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onValid }, ref) => {
-  const { register, handleSubmit, watch, formState: { errors }, reset: formReset } = useForm<InvestigadoSchema>({
+  const form = useForm<InvestigadoSchema>({
     resolver: zodResolver(investigadoSchema),
     defaultValues: { ...investigadoDefaults, ...initial },
   });
 
+  const { register, handleSubmit, watch, formState: { errors } } = form;
+
   useImperativeHandle(ref, () => ({
-    reset: () => formReset({ ...investigadoDefaults }),
+    reset: () => form.reset({ ...investigadoDefaults }),
+    getValues: () => form.getValues(),
   }));
 
   const uppercase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {

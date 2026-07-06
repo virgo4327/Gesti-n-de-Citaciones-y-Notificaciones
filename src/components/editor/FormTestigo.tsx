@@ -15,16 +15,20 @@ type Props = {
 
 export interface FormTestigoHandle {
   reset: () => void;
+  getValues: () => TestigoSchema;
 }
 
 const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, ref) => {
-  const { register, handleSubmit, watch, formState: { errors }, reset: formReset } = useForm<TestigoSchema>({
+  const form = useForm<TestigoSchema>({
     resolver: zodResolver(testigoSchema),
     defaultValues: { ...testigoDefaults, ...initial },
   });
 
+  const { register, handleSubmit, watch, formState: { errors } } = form;
+
   useImperativeHandle(ref, () => ({
-    reset: () => formReset({ ...testigoDefaults }),
+    reset: () => form.reset({ ...testigoDefaults }),
+    getValues: () => form.getValues(),
   }));
 
   const uppercase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
