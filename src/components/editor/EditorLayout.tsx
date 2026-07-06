@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 import { useDocumentStore } from "../../store/documentStore";
 import { documentDefaults } from "../../constants";
 import { documentLabels } from "../../types";
-import type { DocumentPayload, DocumentType } from "../../types";
+import type { DocumentPayload, DocumentType, InvestigadoData, TestigoData, NotificacionData } from "../../types";
 import { sanitizeFilename } from "../../lib/sanitize";
 import FormInvestigado, { type FormInvestigadoHandle } from "./FormInvestigado";
 import FormNotificacion, { type FormNotificacionHandle } from "./FormNotificacion";
@@ -27,6 +27,7 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
   const formRef = useRef<FormHandle>(null);
 
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
+  const [pendingTab, setPendingTab] = useState<"editor" | "preview" | null>(null);
   const [documentData, setDocumentData] = useState<DocumentPayload>(() =>
     drafts[type] ?? documentDefaults[type]
   );
@@ -41,8 +42,27 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
       saveDraft(type, data);
       alert("Borrador guardado correctamente");
       setIsSavingDraft(false);
+    } else if (pendingTab) {
+      setActiveTab(pendingTab);
+      setPendingTab(null);
     } else {
       setActiveTab("preview");
+    }
+  };
+
+  // Al hacer clic en "Vista Previa", primero dispara el submit del form
+  // para capturar los valores actuales antes de cambiar de pestaña.
+  const handleTabChange = (tab: "editor" | "preview") => {
+    if (tab === "preview" && activeTab === "editor") {
+      setPendingTab("preview");
+      const form = document.getElementById("document-form") as HTMLFormElement;
+      if (form) {
+        form.requestSubmit();
+      } else {
+        setActiveTab("preview");
+      }
+    } else {
+      setActiveTab(tab);
     }
   };
 
@@ -157,8 +177,8 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
   };
 
   const handleConfirmGenerate = () => {
-      setConflictos(null);
-      executePdfGeneration();
+    setConflictos(null);
+    executePdfGeneration();
   };
 
   const handleCancelGenerate = () => {
@@ -180,10 +200,10 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
             <h1 className="mt-1 text-3xl font-black text-police">{documentLabels[type]}</h1>
           </div>
           <div className="flex rounded-md border bg-white p-1">
-            <button onClick={() => setActiveTab("editor")} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "editor" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
+            <button onClick={() => handleTabChange("editor")} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "editor" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
               <PenLine className="h-4 w-4" /> Editor
             </button>
-            <button onClick={() => setActiveTab("preview")} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "preview" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
+            <button onClick={() => handleTabChange("preview")} className={`flex h-9 items-center gap-2 rounded px-3 text-sm font-bold transition-colors ${activeTab === "preview" ? "bg-police text-white" : "text-slate-600 hover:text-police"}`}>
               <Eye className="h-4 w-4" /> Vista Previa
             </button>
           </div>
@@ -191,9 +211,9 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
 
         {activeTab === "editor" && (
           <div className="rounded-lg border bg-white p-5 shadow-sm">
-            {type === "investigado"  && <FormInvestigado  ref={formRef} initial={undefined} onValid={handleValid} />}
-            {type === "testigo"      && <FormTestigo      ref={formRef} initial={undefined} onValid={handleValid} />}
-            {type === "notificacion" && <FormNotificacion ref={formRef} initial={undefined} onValid={handleValid} />}
+            {type === "investigado"  && <FormInvestigado  ref={formRef} initial={documentData as InvestigadoData}   onValid={handleValid} />}
+            {type === "testigo"      && <FormTestigo      ref={formRef} initial={documentData as TestigoData}        onValid={handleValid} />}
+            {type === "notificacion" && <FormNotificacion ref={formRef} initial={documentData as NotificacionData}   onValid={handleValid} />}
 
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <Button
