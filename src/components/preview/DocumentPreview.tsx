@@ -37,7 +37,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         </h1>
 
       {/* ── DATOS ── */}
-      <div className="grid gap-1.5 mt-4 mb-6" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.5 }}>
+      <div className="grid gap-1.5 mt-4 mb-6" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.5 }}>
         <p><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Señor (a)</span><span>:  {formatForPdf(sanitizeForPdf(c.nombre))}</span></p>
         <p><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Domicilio</span><span>:  {sanitizeForPdf(c.domicilio)}</span></p>
         <p><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Referencia</span><span>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
@@ -48,14 +48,14 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── FECHA ── */}
       <div className="mt-4 flex justify-end">
-        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+        <p style={{ fontFamily: "Arial, sans-serif", fontSize: 13 }}>
           Iquitos, {formatearFechaDocumento(sanitizeForPdf(c.fechaDocumento))}.
         </p>
       </div>
 
       {/* ── SELLO + ENTERADO ── */}
       <div className="mt-6 flex justify-between">
-        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 13 }}>
           <p style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p>FIRMA: ......................</p>
           <p>POST FIRMA: ......................</p>
@@ -79,7 +79,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }) {
   const items = type === "testigo" ? legalItems.testigo : legalItems.investigado;
   return (
-    <div className="grid gap-2" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.5, textAlign: "justify", wordBreak: "break-word" }}>
+    <div className="grid gap-2" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.5, textAlign: "justify", wordBreak: "break-word" }}>
       <p>
         --- Mediante la presente, se le <strong>CITA</strong> a Ud., para que comparezca ante el Despacho del
         Departamento Desconcentrado de Investigación Contra la Corrupción Iquitos (DEPDICC-IQTS), sito en la Av.
@@ -121,7 +121,7 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
 /* ─── NOTIFICACIÓN ─── */
 function NotificationBody({ data }: { data: NotificacionData }) {
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
+    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 13, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
             <p className="mb-3" style={{ textAlign: "justify", margin: 0, marginBottom: "0.75rem" }}>
         --- Mediante el presente, se le <strong>NOTIFICA</strong> a Ud., que personal policial encargado de las
         investigaciones, ha programado en el Departamento Desconcentrado de Investigación Contra la Corrupción -
