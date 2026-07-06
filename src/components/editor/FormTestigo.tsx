@@ -3,7 +3,6 @@ import { forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { testigoSchema, type TestigoSchema } from "../../schemas/testigoSchema";
 import type { TestigoData } from "../../types";
-import { upper } from "../../lib/utils";
 import { testigoDefaults } from "../../store/documentDefaults";
 import { Field } from "./FormFields";
 import { Button } from "../ui/button";
@@ -31,23 +30,23 @@ const FormTestigo = forwardRef<FormTestigoHandle, Props>(({ initial, onValid }, 
     getValues: () => form.getValues(),
   }));
 
-  const uppercase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    event.currentTarget.value = upper(event.currentTarget.value);
+  const lowercase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    event.currentTarget.value = event.currentTarget.value.toLowerCase();
   };
 
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
        <div className="grid gap-4 md:grid-cols-2">
          <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 002" />
-         <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={uppercase} placeholder="Ej: MARÍA LÓPEZ TORRES" />
-         <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={uppercase} placeholder="Ej: Av. Grau N° 456 - Iquitos" />
-         <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00456" />
-         <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={uppercase} placeholder="NOMBRES DE LOS INVESTIGADOS" />
-         <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
-         <Field label="Hora diligencia" name="hora" register={register} watch={watch} errors={errors} type="time" placeholder="HH:MM" />
-         <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={uppercase} placeholder="Ej: PECULADO" />
-         <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={uppercase} placeholder="Ej: MUNICIPALIDAD PROVINCIAL" />
-         <Field label="Descripción del hecho" name="descripcionHecho" register={register} watch={watch} errors={errors} onInput={uppercase} placeholder="Describa los hechos investigados..." className="md:col-span-2" textarea />
+          <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: MARÍA LÓPEZ TORRES" />
+          <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: Av. Grau N° 456 - Iquitos" />
+          <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00456" />
+          <Field label="Investigados" name="investigados" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="NOMBRES DE LOS INVESTIGADOS" />
+          <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
+          <Field label="Hora diligencia" name="hora" register={register} watch={watch} errors={errors} type="time" placeholder="HH:MM" />
+          <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: PECULADO" />
+          <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Ej: MUNICIPALIDAD PROVINCIAL" />
+          <Field label="Descripción del hecho" name="descripcionHecho" register={register} watch={watch} errors={errors} onInput={lowercase} placeholder="Describa los hechos investigados..." className="md:col-span-2" textarea />
          <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
        </div>
       <div className="flex gap-3 pt-4">

@@ -1,6 +1,6 @@
 import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData } from "../../types";
 import { suffix, legalItems } from "../../constants";
-import { sanitizeForPdf } from "../../lib/sanitize";
+import { sanitizeForPdf, formatForPdf } from "../../lib/sanitize";
 
 const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
 const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
@@ -38,9 +38,9 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 
       {/* ── DATOS ── */}
       <div className="grid gap-1.5 mt-4 mb-6" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.5 }}>
-        <p><span style={{ display: "inline-block", width: 90, fontStyle: "italic", fontWeight: 600 }}>Señor (a)</span><span style={{ fontStyle: "italic" }}>:  {sanitizeForPdf(c.nombre)}</span></p>
-        <p><span style={{ display: "inline-block", width: 90, fontStyle: "italic", fontWeight: 600 }}>Domicilio</span><span style={{ fontStyle: "italic" }}>:  {sanitizeForPdf(c.domicilio)}</span></p>
-        <p><span style={{ display: "inline-block", width: 90, fontStyle: "italic", fontWeight: 600 }}>Referencia</span><span style={{ fontStyle: "italic" }}>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
+        <p><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Señor (a)</span><span>:  {formatForPdf(sanitizeForPdf(c.nombre))}</span></p>
+        <p><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Domicilio</span><span>:  {sanitizeForPdf(c.domicilio)}</span></p>
+        <p><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Referencia</span><span>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
       </div>
 
       {/* ── CUERPO ── */}
@@ -83,10 +83,10 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
       <p>
         --- Mediante la presente, se le <strong>CITA</strong> a Ud., para que comparezca ante el Despacho del
         Departamento Desconcentrado de Investigación Contra la Corrupción Iquitos (DEPDICC-IQTS), sito en la Av.
-        Grau N°1840 - Iquitos, <em>{sanitizeForPdf(data.fechaDiligencia)}</em>, a horas <em>{sanitizeForPdf(data.hora)}</em>, con la finalidad de
+        Grau N°1840 - Iquitos, <strong>{sanitizeForPdf(data.fechaDiligencia)}</strong>, a horas <strong>{sanitizeForPdf(data.hora)}</strong>, con la finalidad de
         recepcionar su {type === "testigo" ? "declaración testimonial" : "manifestación"} con relación a la
         investigación seguida contra la presunta comisión del delito contra la Administración pública en la modalidad
-        de <em>{sanitizeForPdf(data.delito)}</em>, en agravio del Estado Peruano - <em>{sanitizeForPdf(data.agraviado)}</em>, <em>{sanitizeForPdf(data.descripcionHecho)}</em>.
+        de {sanitizeForPdf(data.delito)}, en agravio del Estado Peruano - {sanitizeForPdf(data.agraviado)}, {sanitizeForPdf(data.descripcionHecho)}.
       </p>
       <p>--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
       <ul style={{ fontStyle: "italic", paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
@@ -148,7 +148,7 @@ function NotificationBody({ data }: { data: NotificacionData }) {
         </table>
             <p style={{ textAlign: "justify", margin: 0, marginTop: "12px" }}>
         Las presentes diligencias se realizan en el marco de la investigación seguida en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
-        <em>{sanitizeForPdf(data.delito)}</em>; en agravio del Estado Peruano.
+        {sanitizeForPdf(data.delito)}; en agravio del Estado Peruano.
       </p>
     </div>
   );
