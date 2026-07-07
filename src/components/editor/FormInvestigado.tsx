@@ -48,7 +48,10 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
 
   const applyCase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const el = event.currentTarget;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
     el.value = isUpper ? el.value.toUpperCase() : el.value.toLowerCase();
+    el.setSelectionRange(start, end);
   };
 
   return (
