@@ -15,7 +15,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       style={{ 
         width: 794, 
         height: 1123,
-        paddingTop: 95,      
+        paddingTop: 90,      
         paddingLeft: 85,    
         paddingRight: 70,    
         paddingBottom: 55,   
@@ -25,9 +25,9 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       }}
     >
       {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
-      <div style={{ position: 'absolute', top: '10px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <img src={logoPnp} alt="PNP" style={{ height: '85px', width: 'auto', objectFit: 'contain' }} />
-        <img src={encargadoPng} alt="Encargado" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
+      <div style={{ position: 'absolute', top: '8px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <img src={logoPnp} alt="PNP" style={{ height: '105px', width: 'auto', objectFit: 'contain' }} />
+        <img src={encargadoPng} alt="Encargado" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── TÍTULO ── */}
@@ -38,7 +38,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         </h1>
 
       {/* ── DATOS ── */}
-      <div className="grid gap-1.5 mt-4 mb-5" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.5 }}>
+      <div className="grid gap-1 mt-3 mb-4" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.4 }}>
         <p className="m-0"><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Señor (a)</span><span>:  {formatForPdf(sanitizeForPdf(c.nombre))}</span></p>
         <p className="m-0"><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Domicilio</span><span>:  {sanitizeForPdf(c.domicilio)}</span></p>
         <p className="m-0"><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Referencia</span><span>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
@@ -65,7 +65,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p className="m-0">RELACIÓN: ......................</p>
           <p className="m-0">CELULAR: ......................</p>
         </div>
-        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '50px', marginLeft: '-50px' }} />
+        <img src={selloPng} alt="Sello" style={{ width: '240px', height: 'auto', objectFit: 'contain', marginTop: '50px', marginLeft: '-50px' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
@@ -80,7 +80,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }) {
   const items = type === "testigo" ? legalItems.testigo : legalItems.investigado;
   return (
-    <div className="grid gap-2" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.5, textAlign: "justify", wordBreak: "break-word" }}>
+    <div className="grid gap-1.5" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.4, textAlign: "justify", wordBreak: "break-word" }}>
       <p className="m-0">
         --- Mediante la presente, se le <strong>CITA</strong> a Ud., para que comparezca ante el Despacho del
         Departamento Desconcentrado de Investigación Contra la Corrupción Iquitos (DEPDICC-IQTS), sito en la Av.
@@ -92,7 +92,7 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
       <p className="m-0">--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
       <ul style={{ paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
         {items.map(item => (
-          <li key={item} style={{ marginBottom: "6px", display: "flex", alignItems: "center" }}>
+          <li key={item} style={{ marginBottom: "4px", display: "flex", alignItems: "center" }}>
             <span style={{ width: "16px", flexShrink: 0, marginRight: "4px" }}>-</span>
             <span>{item}</span>
           </li>
@@ -123,13 +123,13 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
 function NotificationBody({ data }: { data: NotificacionData }) {
   return (
     <div style={{ fontFamily: "Arial, sans-serif", fontSize: 13, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
-            <p className="mb-3" style={{ textAlign: "justify", margin: 0, marginBottom: "0.75rem" }}>
+            <p className="mb-2" style={{ textAlign: "justify", margin: 0, marginBottom: "0.5rem" }}>
         --- Mediante el presente, se le <strong>NOTIFICA</strong> a Ud., que personal policial encargado de las
         investigaciones, ha programado en el Departamento Desconcentrado de Investigación Contra la Corrupción -
         DEPDICC-IQTS (sito en la Av. Grau N° 1840 - Iquitos), las siguientes declaraciones testimoniales conforme
         se detalla:
       </p>
-        <table className="mb-3 w-full border-collapse text-center text-[11px]">
+        <table className="mb-2 w-full border-collapse text-center text-[11px]">
           <thead>
             <tr>{["N°","NOMBRES","CONDICIÓN","FECHA","HORA"].map(h => (
               <th key={h} className="border border-black px-3 py-1 font-bold">{h}</th>
@@ -147,7 +147,7 @@ function NotificationBody({ data }: { data: NotificacionData }) {
             ))}
           </tbody>
         </table>
-            <p style={{ textAlign: "justify", margin: 0, marginTop: "12px" }}>
+            <p style={{ textAlign: "justify", margin: 0, marginTop: "10px" }}>
         Las presentes diligencias se realizan en el marco de la investigación seguida en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
         {sanitizeForPdf(data.delito)}; en agravio del Estado Peruano.
       </p>
