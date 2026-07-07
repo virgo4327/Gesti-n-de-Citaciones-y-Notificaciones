@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type MutableRefObject } from "react";
 import type { FieldErrors, FieldValues, Path, UseFormRegister, UseFormWatch } from "react-hook-form";
 
 type FieldProps<T extends FieldValues> = {
@@ -12,6 +12,7 @@ type FieldProps<T extends FieldValues> = {
   onInput?: React.FormEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   placeholder?: string;
   className?: string;
+  shiftPressedRef?: MutableRefObject<boolean>;
 };
 
 type CalendarDateInputProps = {
@@ -125,13 +126,13 @@ function ClockTimeInput({ value, onChange, placeholder, focused }: ClockTimeInpu
   );
 }
 
-export function Field<T extends FieldValues>({ label, name, register, watch, errors, textarea, type, onInput, placeholder, className }: FieldProps<T>) {
+export function Field<T extends FieldValues>({ label, name, register, watch, errors, textarea, type, onInput, placeholder, className, shiftPressedRef }: FieldProps<T>) {
   const error = errors[name]?.message as string | undefined;
   const [focused, setFocused] = useState(false);
   const value = watch(name) || "";
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (onInput) onInput(e);
+    if (!shiftPressedRef?.current && onInput) onInput(e);
   };
 
   const hasValue = value.length > 0 || focused;
