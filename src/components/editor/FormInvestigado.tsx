@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { investigadoSchema, type InvestigadoSchema } from "../../schemas/investigadoSchema";
 import type { InvestigadoData } from "../../types";
@@ -30,30 +30,8 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
     getValues: () => form.getValues(),
   }));
 
-  const [isUpper, setIsUpper] = useState(false);
-
-  const toggleCase = () => {
-    setIsUpper(prev => {
-      const next = !prev;
-      ['nombre', 'domicilio', 'delito', 'agraviado', 'descripcionHecho'].forEach(name => {
-        const current = form.getValues(name as keyof InvestigadoSchema) || "";
-        const nextValue = next ? current.toUpperCase() : current.toLowerCase();
-        form.setValue(name as keyof InvestigadoSchema, nextValue);
-        const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null;
-        if (el) el.value = nextValue;
-      });
-      return next;
-    });
-  };
-
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
-      <div className="flex items-center gap-3">
-        <Button type="button" onClick={toggleCase} variant="secondary">
-          {isUpper ? "Minúsculas" : "Mayúsculas"}
-        </Button>
-        <span className="text-xs text-slate-500">Nombre completo, Domicilio, Delito, Agraviado y Descripción del hecho</span>
-      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 001" />
         <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} placeholder="Ej: juan pérez garcía" />
