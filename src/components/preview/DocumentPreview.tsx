@@ -15,19 +15,19 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       style={{ 
         width: 794, 
         height: 1123,
-        paddingTop: 100,      
+        paddingTop: 95,      
         paddingLeft: 100,    
         paddingRight: 60,    
-        paddingBottom: 50,   
+        paddingBottom: 60,   
         boxSizing: 'border-box',
         position: 'relative',
         overflow: 'hidden'
       }}
     >
       {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
-      <div style={{ position: 'absolute', top: '20px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <img src={logoPnp} alt="PNP" style={{ height: '65px', width: 'auto', objectFit: 'contain' }} />
-        <img src={encargadoPng} alt="Encargado" style={{ height: '28px', width: 'auto', objectFit: 'contain' }} />
+      <div style={{ position: 'absolute', top: '8px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <img src={logoPnp} alt="PNP" style={{ height: '90px', width: 'auto', objectFit: 'contain' }} />
+        <img src={encargadoPng} alt="Encargado" style={{ height: '35px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── TÍTULO ── */}
@@ -65,12 +65,12 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p className="m-0">RELACIÓN: ......................</p>
           <p className="m-0">CELULAR: ......................</p>
         </div>
-        <img src={selloPng} alt="Sello" style={{ width: '160px', height: 'auto', objectFit: 'contain', marginTop: '40px', marginLeft: '-40px' }} />
+        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '40px', marginLeft: '-50px' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
       <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)' }}>
-        <img src={footerDoc} alt="Pie" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
+        <img src={footerDoc} alt="Pie" style={{ height: '55px', width: 'auto', objectFit: 'contain' }} />
       </div>
     </div>
   );
