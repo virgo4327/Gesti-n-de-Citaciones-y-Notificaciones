@@ -1,8 +1,72 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { DocumentPayload, DocumentType, HistoryItem } from "../types";
-import { encryptData, decryptData } from "../lib/crypto";
+import { decryptData } from "../lib/crypto";
 import { get, set, del } from "idb-keyval";
+import Dexie, { type Table } from "dexie";
+
+type DraftRow = { key: DocumentType; value: string };
+type HistoryRow = { id: string; value: string };
+
+class DepdiccDB extends Dexie {
+  drafts!: Table<DraftRow, string>;
+  history!: Table<HistoryRow, string>;
+
+  constructor() {
+    super("depdicc-db");
+    this.version(1).stores({
+      drafts: "key",
+      history: "id",
+    });
+  }
+}
+
+const db = new DepdiccDB();
+
+const LEGACY_KEY = "depdicc-documentos";
+const MIGRATION_KEY = "depdicc-migrated";
+
+async function isMigrated(): Promise<boolean> {
+  const flag = await get(MIGRATION_KEY);
+  return flag === "true";
+}
+
+async function markMigrated() {
+  await set(MIGRATION_KEY, "true");
+}
+
+async function migrateLegacyData() {
+  if (await isMigrated()) return;
+
+  const raw = await get(LEGACY_KEY);
+  if (!raw) {
+    await markMigrated();
+    return;
+  }
+
+  try {
+    const decrypted = await decryptData(raw as string);
+    const parsed = JSON.parse(decrypted);
+
+    const drafts: DraftRow[] = Object.entries(parsed.drafts ?? {}).map(([key, value]) => ({
+      key: key as DocumentType,
+      value: JSON.stringify(value),
+    }));
+
+    const history: HistoryRow[] = (parsed.history ?? []).map((item: HistoryItem) => ({
+      id: item.id,
+      value: JSON.stringify(item),
+    }));
+
+    if (drafts.length) await db.drafts.bulkPut(drafts);
+    if (history.length) await db.history.bulkPut(history);
+  } catch {
+    // If legacy data is corrupted, continue without it.
+  } finally {
+    await markMigrated();
+    await del(LEGACY_KEY).catch(() => {});
+  }
+}
 
 type Store = {
   drafts: Partial<Record<DocumentType, DocumentPayload>>;
@@ -46,21 +110,49 @@ export const useDocumentStore = create<Store>()(
       clearStorageError: () => set({ storageError: null }),
     }),
     {
-      name: "depdicc-documentos",
+      name: LEGACY_KEY,
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
+          if (name !== LEGACY_KEY) return null;
           try {
-            const raw = await get(name);
-            if (!raw) return null;
-            return await decryptData(raw as string);
+            const allDrafts = await db.drafts.toArray();
+            const allHistory = await db.history.toArray();
+
+            const drafts: Partial<Record<DocumentType, DocumentPayload>> = {};
+            for (const row of allDrafts) {
+              drafts[row.key] = JSON.parse(row.value);
+            }
+
+            const history = allHistory.map((row) => JSON.parse(row.value) as HistoryItem);
+
+            return JSON.stringify({ drafts, history });
           } catch {
             return null;
           }
         },
         setItem: async (name: string, value: string) => {
+          if (name !== LEGACY_KEY) return;
+
           try {
-            const encrypted = await encryptData(value);
-            await set(name, encrypted);
+            const parsed = JSON.parse(value);
+
+            await db.transaction("rw", db.drafts, db.history, async () => {
+              await db.drafts.clear();
+              await db.history.clear();
+
+              const drafts: DraftRow[] = Object.entries(parsed.drafts ?? {}).map(([key, val]) => ({
+                key: key as DocumentType,
+                value: JSON.stringify(val),
+              }));
+
+              const history: HistoryRow[] = (parsed.history ?? []).map((item: HistoryItem) => ({
+                id: item.id,
+                value: JSON.stringify(item),
+              }));
+
+              if (drafts.length) await db.drafts.bulkPut(drafts);
+              if (history.length) await db.history.bulkPut(history);
+            });
           } catch (error) {
             const isQuota =
               error instanceof DOMException && error.name === "QuotaExceededError";
@@ -71,12 +163,15 @@ export const useDocumentStore = create<Store>()(
           }
         },
         removeItem: async (name: string) => {
-          await del(name);
+          if (name !== LEGACY_KEY) return;
+          await db.transaction("rw", db.drafts, db.history, async () => {
+            await db.drafts.clear();
+            await db.history.clear();
+          });
         },
       })),
-      onRehydrateStorage: () => (state) => {
-        if (!state) return;
-        state.storageError = null;
+      onRehydrateStorage: () => {
+        migrateLegacyData();
       },
     },
   ),
