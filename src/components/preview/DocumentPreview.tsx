@@ -26,8 +26,8 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
     >
       {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
       <div style={{ position: 'absolute', top: '10px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <img src={logoPnp} alt="PNP" style={{ height: '110px', width: 'auto', objectFit: 'contain' }} />
-        <img src={encargadoPng} alt="Encargado" style={{ height: '42px', width: 'auto', objectFit: 'contain' }} />
+        <img src={logoPnp} alt="PNP" style={{ height: '85px', width: 'auto', objectFit: 'contain' }} />
+        <img src={encargadoPng} alt="Encargado" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── TÍTULO ── */}
