@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { useForm } from "react-hook-form";
 import { investigadoSchema, type InvestigadoSchema } from "../../schemas/investigadoSchema";
 import type { InvestigadoData } from "../../types";
@@ -31,22 +31,6 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
   }));
 
   const [isUpper, setIsUpper] = useState(false);
-  const shiftPressedRef = useRef(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Shift") shiftPressedRef.current = true;
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Shift") shiftPressedRef.current = false;
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keyup", handleKeyUp);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
 
   const toggleCase = () => {
     setIsUpper(prev => {
@@ -62,15 +46,6 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
     });
   };
 
-  const applyCase = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (shiftPressedRef.current) return;
-    const el = event.currentTarget;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    el.value = isUpper ? el.value.toUpperCase() : el.value.toLowerCase();
-    el.setSelectionRange(start, end);
-  };
-
   return (
     <form id="document-form" onSubmit={handleSubmit((data) => onValid(data))} className="grid gap-5">
       <div className="flex items-center gap-3">
@@ -81,14 +56,14 @@ const FormInvestigado = forwardRef<FormInvestigadoHandle, Props>(({ initial, onV
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Número" name="numero" register={register} watch={watch} errors={errors} placeholder="Ej: 001" />
-        <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} onInput={applyCase} shiftPressedRef={shiftPressedRef} placeholder="Ej: juan pérez garcía" />
-        <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} onInput={applyCase} shiftPressedRef={shiftPressedRef} placeholder="Ej: jr. lima n° 123 - iquitos" />
+        <Field label="Nombre completo" name="nombre" register={register} watch={watch} errors={errors} placeholder="Ej: juan pérez garcía" />
+        <Field label="Domicilio" name="domicilio" register={register} watch={watch} errors={errors} placeholder="Ej: jr. lima n° 123 - iquitos" />
         <Field label="Referencia/Carpeta Fiscal N°" name="carpetaFiscal" register={register} watch={watch} errors={errors} placeholder="Ej: 2026-00123" />
         <Field label="Fecha diligencia" name="fechaDiligencia" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
         <Field label="Hora diligencia" name="hora" register={register} watch={watch} errors={errors} type="time" placeholder="HH:MM" />
-        <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} onInput={applyCase} shiftPressedRef={shiftPressedRef} placeholder="Ej: colusión" />
-        <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} onInput={applyCase} shiftPressedRef={shiftPressedRef} placeholder="Ej: estado peruano" />
-        <Field label="Descripción del hecho" name="descripcionHecho" register={register} watch={watch} errors={errors} onInput={applyCase} shiftPressedRef={shiftPressedRef} placeholder="Describa los hechos investigados..." className="md:col-span-2" textarea />
+        <Field label="Delito" name="delito" register={register} watch={watch} errors={errors} placeholder="Ej: colusión" />
+        <Field label="Agraviado" name="agraviado" register={register} watch={watch} errors={errors} placeholder="Ej: estado peruano" />
+        <Field label="Descripción del hecho" name="descripcionHecho" register={register} watch={watch} errors={errors} placeholder="Describa los hechos investigados..." className="md:col-span-2" textarea />
         <Field label="Fecha de documento" name="fechaDocumento" register={register} watch={watch} errors={errors} type="date" placeholder="DD/MM/AAAA" />
       </div>
       <div className="flex gap-3 pt-4">
