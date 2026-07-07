@@ -2,23 +2,23 @@ import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData, Tes
 import { suffix, legalItems } from "../../constants";
 import { sanitizeForPdf, formatForPdf, formatearFechaDocumento } from "../../lib/sanitize";
 
-const logoPnp      = new URL("/assets/logo_pnp.png",      window.location.origin).toString();
-const encargadoPng = new URL("/assets/encargado.png",     window.location.origin).toString();
-const footerDoc    = new URL("/assets/footer_doc.png",    window.location.origin).toString();
-const selloPng     = new URL("/assets/sello.png",         window.location.origin).toString();
+const logoPnp = new URL("/assets/logo_pnp.png", window.location.origin).toString();
+const encargadoPng = new URL("/assets/encargado.png", window.location.origin).toString();
+const footerDoc = new URL("/assets/footer_doc.png", window.location.origin).toString();
+const selloPng = new URL("/assets/sello.png", window.location.origin).toString();
 
 export default function DocumentPreview({ type, data }: { type: DocumentType; data: DocumentPayload }) {
   const c = data as BaseCitation;
   return (
-    <div 
-      className="doc-paper mx-auto bg-white shadow-soft" 
-      style={{ 
-        width: 794, 
+    <div
+      className="doc-paper mx-auto bg-white shadow-soft"
+      style={{
+        width: 794,
         height: 1123,
-        paddingTop: 90,      
-        paddingLeft: 85,    
-        paddingRight: 70,    
-        paddingBottom: 55,   
+        paddingTop: 90,
+        paddingLeft: 85,
+        paddingRight: 70,
+        paddingBottom: 55,
         boxSizing: 'border-box',
         position: 'relative',
         overflow: 'hidden'
@@ -31,11 +31,11 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
       </div>
 
       {/* ── TÍTULO ── */}
-        <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 4, marginTop: 10 }}>
-          <span style={{ borderBottom: '2px solid black', paddingBottom: '4px', display: 'inline-block' }}>
-            {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
-          </span>
-        </h1>
+      <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 4, marginTop: 10 }}>
+        <span style={{ borderBottom: '2px solid black', paddingBottom: '4px', display: 'inline-block' }}>
+          {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
+        </span>
+      </h1>
 
       {/* ── DATOS ── */}
       <div className="grid gap-1 mt-3 mb-4" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.4 }}>
@@ -79,7 +79,6 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 /* ─── CITACIÓN ─── */
 function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation | TestigoData }) {
   const items = type === "testigo" ? legalItems.testigo : legalItems.investigado;
-  const investigados = type === "testigo" ? (data as TestigoData).investigados : undefined;
   return (
     <div className="grid gap-1.5" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.4, textAlign: "justify", wordBreak: "break-word" }}>
       <p className="m-0">
@@ -87,14 +86,9 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation |
         Departamento Desconcentrado de Investigación Contra la Corrupción Iquitos (DEPDICC-IQTS), sito en la Av.
         Grau N°1840 - Iquitos, <strong>{sanitizeForPdf(data.fechaDiligencia)}</strong>, a horas <strong>{sanitizeForPdf(data.hora)}</strong>, con la finalidad de
         recepcionar su {type === "testigo" ? "declaración testimonial" : "manifestación"} con relación a la
-        investigación seguida contra la presunta comisión del delito contra la Administración pública en la modalidad
+        investigación seguida{type === "testigo" ? ` contra ${sanitizeForPdf((data as TestigoData).investigados)}` : ""} por la presunta comisión del delito contra la Administración pública en la modalidad
         de {sanitizeForPdf(data.delito)}, en agravio del Estado Peruano - {sanitizeForPdf(data.agraviado)}, {sanitizeForPdf(data.descripcionHecho)}.
       </p>
-      {type === "testigo" && investigados && (
-        <p className="m-0">
-          --- Investigados: {sanitizeForPdf(investigados)}.
-        </p>
-      )}
       <p className="m-0">--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
       <ul style={{ paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
         {items.map(item => (
@@ -129,31 +123,31 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation |
 function NotificationBody({ data }: { data: NotificacionData }) {
   return (
     <div style={{ fontFamily: "Arial, sans-serif", fontSize: 13, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
-            <p className="mb-2" style={{ textAlign: "justify", margin: 0, marginBottom: "0.5rem" }}>
+      <p className="mb-2" style={{ textAlign: "justify", margin: 0, marginBottom: "0.5rem" }}>
         --- Mediante el presente, se le <strong>NOTIFICA</strong> a Ud., que personal policial encargado de las
         investigaciones, ha programado en el Departamento Desconcentrado de Investigación Contra la Corrupción -
         DEPDICC-IQTS (sito en la Av. Grau N° 1840 - Iquitos), las siguientes declaraciones testimoniales conforme
         se detalla:
       </p>
-        <table className="mb-2 w-full border-collapse text-center text-[11px]">
-          <thead>
-            <tr>{["N°","NOMBRES","CONDICIÓN","FECHA","HORA"].map(h => (
-              <th key={h} className="border border-black px-3 py-1 font-bold">{h}</th>
-            ))}</tr>
-          </thead>
-          <tbody>
-            {data.citados.map((row, i) => (
-              <tr key={row.id}>
-                 <td className="border border-black px-3 py-1">{i + 1}</td>
-                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.nombres)}</td>
-                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.condicion)}</td>
-                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.fecha)}</td>
-                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.hora)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-            <p style={{ textAlign: "justify", margin: 0, marginTop: "10px" }}>
+      <table className="mb-2 w-full border-collapse text-center text-[11px]">
+        <thead>
+          <tr>{["N°", "NOMBRES", "CONDICIÓN", "FECHA", "HORA"].map(h => (
+            <th key={h} className="border border-black px-3 py-1 font-bold">{h}</th>
+          ))}</tr>
+        </thead>
+        <tbody>
+          {data.citados.map((row, i) => (
+            <tr key={row.id}>
+              <td className="border border-black px-3 py-1">{i + 1}</td>
+              <td className="border border-black px-3 py-1">{sanitizeForPdf(row.nombres)}</td>
+              <td className="border border-black px-3 py-1">{sanitizeForPdf(row.condicion)}</td>
+              <td className="border border-black px-3 py-1">{sanitizeForPdf(row.fecha)}</td>
+              <td className="border border-black px-3 py-1">{sanitizeForPdf(row.hora)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p style={{ textAlign: "justify", margin: 0, marginTop: "10px" }}>
         Las presentes diligencias se realizan en el marco de la investigación seguida en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
         {sanitizeForPdf(data.delito)}; en agravio del Estado Peruano.
       </p>
