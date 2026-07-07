@@ -16,48 +16,48 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
         width: 794, 
         height: 1123,
         paddingTop: 95,      
-        paddingLeft: 100,    
-        paddingRight: 60,    
-        paddingBottom: 60,   
+        paddingLeft: 85,    
+        paddingRight: 70,    
+        paddingBottom: 55,   
         boxSizing: 'border-box',
         position: 'relative',
         overflow: 'hidden'
       }}
     >
       {/* ── LOGOS SUPERIORES (dentro del margen) ── */}
-      <div style={{ position: 'absolute', top: '8px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <img src={logoPnp} alt="PNP" style={{ height: '90px', width: 'auto', objectFit: 'contain' }} />
-        <img src={encargadoPng} alt="Encargado" style={{ height: '35px', width: 'auto', objectFit: 'contain' }} />
+      <div style={{ position: 'absolute', top: '10px', left: '25px', right: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <img src={logoPnp} alt="PNP" style={{ height: '110px', width: 'auto', objectFit: 'contain' }} />
+        <img src={encargadoPng} alt="Encargado" style={{ height: '42px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
       {/* ── TÍTULO ── */}
-        <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 15, textAlign: "left", marginBottom: 3, marginTop: 6 }}>
+        <h1 style={{ fontFamily: "Impact, Arial Black, sans-serif", fontSize: 16, textAlign: "left", marginBottom: 4, marginTop: 10 }}>
           <span style={{ borderBottom: '2px solid black', paddingBottom: '4px', display: 'inline-block' }}>
             {type === "notificacion" ? "NOTIFICACIÓN POLICIAL" : "CITACIÓN"} N° {sanitizeForPdf(c.numero)}{suffix}
           </span>
         </h1>
 
       {/* ── DATOS ── */}
-      <div className="grid gap-1 mt-3 mb-4" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.35 }}>
-        <p className="m-0"><span style={{ display: "inline-block", width: 85, fontWeight: 600 }}>Señor (a)</span><span>:  {formatForPdf(sanitizeForPdf(c.nombre))}</span></p>
-        <p className="m-0"><span style={{ display: "inline-block", width: 85, fontWeight: 600 }}>Domicilio</span><span>:  {sanitizeForPdf(c.domicilio)}</span></p>
-        <p className="m-0"><span style={{ display: "inline-block", width: 85, fontWeight: 600 }}>Referencia</span><span>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
+      <div className="grid gap-1.5 mt-4 mb-5" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.5 }}>
+        <p className="m-0"><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Señor (a)</span><span>:  {formatForPdf(sanitizeForPdf(c.nombre))}</span></p>
+        <p className="m-0"><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Domicilio</span><span>:  {sanitizeForPdf(c.domicilio)}</span></p>
+        <p className="m-0"><span style={{ display: "inline-block", width: 90, fontWeight: 600 }}>Referencia</span><span>:  Carpeta Fiscal N° {sanitizeForPdf(c.carpetaFiscal)}</span></p>
       </div>
 
       {/* ── CUERPO ── */}
       {type === "notificacion" ? <NotificationBody data={data as NotificacionData} /> : <CitationBody type={type} data={data as BaseCitation} />}
 
       {/* ── FECHA ── */}
-      <div className="mt-3 flex justify-end">
-        <p className="m-0" style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
+      <div className="mt-4 flex justify-end">
+        <p className="m-0" style={{ fontFamily: "Arial, sans-serif", fontSize: 13 }}>
           Iquitos, {formatearFechaDocumento(sanitizeForPdf(c.fechaDocumento))}.
         </p>
       </div>
 
       {/* ── SELLO + ENTERADO ── */}
-      <div className="mt-4 flex justify-between">
-        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12 }}>
-          <p className="m-0" style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 3 }}>ENTERADO:</p>
+      <div className="mt-5 flex justify-between">
+        <div style={{ fontFamily: "Arial, sans-serif", fontSize: 13 }}>
+          <p className="m-0" style={{ fontWeight: "bold", textDecoration: "underline", marginBottom: 4 }}>ENTERADO:</p>
           <p className="m-0">FIRMA: ......................</p>
           <p className="m-0">POST FIRMA: ......................</p>
           <p className="m-0">D.N.I. N°: ......................</p>
@@ -65,11 +65,11 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
           <p className="m-0">RELACIÓN: ......................</p>
           <p className="m-0">CELULAR: ......................</p>
         </div>
-        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '40px', marginLeft: '-50px' }} />
+        <img src={selloPng} alt="Sello" style={{ width: '220px', height: 'auto', objectFit: 'contain', marginTop: '50px', marginLeft: '-50px' }} />
       </div>
 
       {/* ── PIE DE PÁGINA (dentro del margen inferior) ── */}
-      <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)' }}>
+      <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)' }}>
         <img src={footerDoc} alt="Pie" style={{ height: '55px', width: 'auto', objectFit: 'contain' }} />
       </div>
     </div>
@@ -80,7 +80,7 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }) {
   const items = type === "testigo" ? legalItems.testigo : legalItems.investigado;
   return (
-    <div className="grid gap-1.5" style={{ fontFamily: "Arial, sans-serif", fontSize: 12, lineHeight: 1.35, textAlign: "justify", wordBreak: "break-word" }}>
+    <div className="grid gap-2" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.5, textAlign: "justify", wordBreak: "break-word" }}>
       <p className="m-0">
         --- Mediante la presente, se le <strong>CITA</strong> a Ud., para que comparezca ante el Despacho del
         Departamento Desconcentrado de Investigación Contra la Corrupción Iquitos (DEPDICC-IQTS), sito en la Av.
@@ -92,7 +92,7 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
       <p className="m-0">--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
       <ul style={{ paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
         {items.map(item => (
-          <li key={item} style={{ marginBottom: "4px", display: "flex", alignItems: "center" }}>
+          <li key={item} style={{ marginBottom: "6px", display: "flex", alignItems: "center" }}>
             <span style={{ width: "16px", flexShrink: 0, marginRight: "4px" }}>-</span>
             <span>{item}</span>
           </li>
@@ -122,32 +122,32 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
 /* ─── NOTIFICACIÓN ─── */
 function NotificationBody({ data }: { data: NotificacionData }) {
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 12, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
-            <p className="mb-2" style={{ textAlign: "justify", margin: 0, marginBottom: "0.5rem" }}>
+    <div style={{ fontFamily: "Arial, sans-serif", fontSize: 13, paddingLeft: 0, paddingRight: 0, wordBreak: "break-word" }}>
+            <p className="mb-3" style={{ textAlign: "justify", margin: 0, marginBottom: "0.75rem" }}>
         --- Mediante el presente, se le <strong>NOTIFICA</strong> a Ud., que personal policial encargado de las
         investigaciones, ha programado en el Departamento Desconcentrado de Investigación Contra la Corrupción -
         DEPDICC-IQTS (sito en la Av. Grau N° 1840 - Iquitos), las siguientes declaraciones testimoniales conforme
         se detalla:
       </p>
-        <table className="mb-2 w-full border-collapse text-center text-[10px]">
+        <table className="mb-3 w-full border-collapse text-center text-[11px]">
           <thead>
             <tr>{["N°","NOMBRES","CONDICIÓN","FECHA","HORA"].map(h => (
-              <th key={h} className="border border-black px-2 py-0.5 font-bold">{h}</th>
+              <th key={h} className="border border-black px-3 py-1 font-bold">{h}</th>
             ))}</tr>
           </thead>
           <tbody>
             {data.citados.map((row, i) => (
               <tr key={row.id}>
-                 <td className="border border-black px-2 py-0.5">{i + 1}</td>
-                 <td className="border border-black px-2 py-0.5">{sanitizeForPdf(row.nombres)}</td>
-                 <td className="border border-black px-2 py-0.5">{sanitizeForPdf(row.condicion)}</td>
-                 <td className="border border-black px-2 py-0.5">{sanitizeForPdf(row.fecha)}</td>
-                 <td className="border border-black px-2 py-0.5">{sanitizeForPdf(row.hora)}</td>
+                 <td className="border border-black px-3 py-1">{i + 1}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.nombres)}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.condicion)}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.fecha)}</td>
+                 <td className="border border-black px-3 py-1">{sanitizeForPdf(row.hora)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-            <p style={{ textAlign: "justify", margin: 0, marginTop: "10px" }}>
+            <p style={{ textAlign: "justify", margin: 0, marginTop: "12px" }}>
         Las presentes diligencias se realizan en el marco de la investigación seguida en su contra por la presunta comisión del Delito Contra la Administración Pública -{" "}
         {sanitizeForPdf(data.delito)}; en agravio del Estado Peruano.
       </p>
