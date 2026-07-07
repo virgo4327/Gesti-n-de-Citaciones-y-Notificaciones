@@ -49,7 +49,7 @@ export const useDocumentStore = create<Store>()(
           try {
             return await decryptData(raw);
           } catch {
-            return raw;
+            return null;
           }
         },
         setItem: async (name: string, value: string) => {

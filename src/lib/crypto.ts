@@ -3,10 +3,10 @@ const IV_LENGTH = 12;
 const KEY_ITERATIONS = 100_000;
 
 function getPassword(): string {
-  let pwd = sessionStorage.getItem("__sk");
+  let pwd = localStorage.getItem("__sk");
   if (!pwd) {
     pwd = crypto.randomUUID() + crypto.randomUUID();
-    sessionStorage.setItem("__sk", pwd);
+    localStorage.setItem("__sk", pwd);
   }
   return pwd;
 }
