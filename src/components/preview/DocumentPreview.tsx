@@ -1,4 +1,4 @@
-import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData } from "../../types";
+import type { BaseCitation, DocumentPayload, DocumentType, NotificacionData, TestigoData } from "../../types";
 import { suffix, legalItems } from "../../constants";
 import { sanitizeForPdf, formatForPdf, formatearFechaDocumento } from "../../lib/sanitize";
 
@@ -77,8 +77,9 @@ export default function DocumentPreview({ type, data }: { type: DocumentType; da
 }
 
 /* ─── CITACIÓN ─── */
-function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }) {
+function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation | TestigoData }) {
   const items = type === "testigo" ? legalItems.testigo : legalItems.investigado;
+  const investigados = type === "testigo" ? (data as TestigoData).investigados : undefined;
   return (
     <div className="grid gap-1.5" style={{ fontFamily: "Arial, sans-serif", fontSize: 13, lineHeight: 1.4, textAlign: "justify", wordBreak: "break-word" }}>
       <p className="m-0">
@@ -89,6 +90,11 @@ function CitationBody({ type, data }: { type: DocumentType; data: BaseCitation }
         investigación seguida contra la presunta comisión del delito contra la Administración pública en la modalidad
         de {sanitizeForPdf(data.delito)}, en agravio del Estado Peruano - {sanitizeForPdf(data.agraviado)}, {sanitizeForPdf(data.descripcionHecho)}.
       </p>
+      {type === "testigo" && investigados && (
+        <p className="m-0">
+          --- Investigados: {sanitizeForPdf(investigados)}.
+        </p>
+      )}
       <p className="m-0">--- Asimismo, respecto a la citada diligencia, se le informa lo siguiente:</p>
       <ul style={{ paddingLeft: "0", margin: 0, listStyleType: "none", textAlign: "justify" }}>
         {items.map(item => (
