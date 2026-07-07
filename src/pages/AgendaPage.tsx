@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Trash2, CalendarRange, AlertTriangle, Clock, ChevronDown, ChevronUp, ClipboardX } from "lucide-react";
+import { CalendarDays, Trash2, CalendarRange, AlertTriangle, Clock, ChevronDown, ChevronUp, ClipboardX, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
 import { documentLabels } from "../types";
 import { construirAgenda, agruparPorFecha, formatearFechaDisplay } from "../lib/schedule";
+
+const PAGE_SIZE = 5;
 
 const TYPE_COLORS: Record<string, string> = {
   investigado: "bg-blue-100 text-blue-700",
@@ -14,10 +16,11 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default function AgendaPage() {
-  const { history, deleteHistory } = useDocumentStore();
+  const { history, deleteHistory, storageError, clearStorageError } = useDocumentStore();
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
   const [fechaAbierta, setFechaAbierta] = useState<string | null>(null);
   const [confirmarLimpieza, setConfirmarLimpieza] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const agenda = useMemo(() => construirAgenda(history), [history]);
 
@@ -41,6 +44,14 @@ export default function AgendaPage() {
     });
     return keys;
   }, [agrupada]);
+
+  const totalPages = Math.max(1, Math.ceil(fechas.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageFechas = fechas.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   const stats = useMemo(() => {
     const total = agenda.length;
@@ -135,7 +146,7 @@ export default function AgendaPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {fechas.map((fecha) => {
+              {pageFechas.map((fecha) => {
                 const items = agrupada.get(fecha) ?? [];
                 const abierta = fechaAbierta === fecha;
                 const fechaDisplay = formatearFechaDisplay(fecha);
@@ -219,6 +230,42 @@ export default function AgendaPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {storageError && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{storageError}</span>
+              <Button variant="ghost" className="ml-auto h-8 px-3 text-xs" onClick={clearStorageError}>
+                Cerrar
+              </Button>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-xs text-slate-500">
+                Página {safePage} de {totalPages} — {fechas.length} fecha{fechas.length !== 1 ? "s" : ""}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="h-8 px-3"
+                  disabled={safePage <= 1}
+                  onClick={() => handlePageChange(safePage - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4" /> Anterior
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="h-8 px-3"
+                  disabled={safePage >= totalPages}
+                  onClick={() => handlePageChange(safePage + 1)}
+                >
+                  Siguiente <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </section>

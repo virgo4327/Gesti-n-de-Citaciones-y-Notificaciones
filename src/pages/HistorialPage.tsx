@@ -1,4 +1,4 @@
-import { Download, Search, Trash2 } from "lucide-react";
+import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -8,13 +8,16 @@ import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
-import { documentLabels, type DocumentType } from "../types";
+import { documentLabels, type DocumentType, type HistoryItem } from "../types";
 import DocumentPreview from "../components/preview/DocumentPreview";
 
+const PAGE_SIZE = 20;
+
 export default function HistorialPage() {
-  const { history, deleteHistory } = useDocumentStore();
+  const { history, deleteHistory, storageError, clearStorageError } = useDocumentStore();
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<DocumentType | "todos">("todos");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
     return history.filter((item) => {
@@ -24,8 +27,16 @@ export default function HistorialPage() {
     });
   }, [history, query, typeFilter]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
   // Función reutilizable para generar PDF desde historial
-  const handleDownloadFromHistory = async (item: any) => {
+  const handleDownloadFromHistory = async (item: HistoryItem) => {
     const container = document.createElement("div");
     container.style.position = "fixed";
     container.style.left = "-9999px";
@@ -123,7 +134,7 @@ export default function HistorialPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item) => (
+                {pageItems.map((item) => (
                   <tr key={item.id} className="border-t">
                     <td className="px-4 py-3 font-bold">{item.numero}</td>
                     <td className="px-4 py-3">{documentLabels[item.type]}</td>
@@ -158,6 +169,42 @@ export default function HistorialPage() {
               </tbody>
             </table>
           </div>
+
+          {storageError && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>{storageError}</span>
+              <Button variant="ghost" className="ml-auto h-8 px-3 text-xs" onClick={clearStorageError}>
+                Cerrar
+              </Button>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-xs text-slate-500">
+                Página {safePage} de {totalPages} — {filtered.length} registro{filtered.length !== 1 ? "s" : ""}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="h-8 px-3"
+                  disabled={safePage <= 1}
+                  onClick={() => handlePageChange(safePage - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4" /> Anterior
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="h-8 px-3"
+                  disabled={safePage >= totalPages}
+                  onClick={() => handlePageChange(safePage + 1)}
+                >
+                  Siguiente <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </section>
       </main>
     </>
