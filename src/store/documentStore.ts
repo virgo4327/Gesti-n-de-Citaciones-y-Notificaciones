@@ -47,13 +47,14 @@ async function migrateLegacyData() {
   try {
     const decrypted = await decryptData(raw as string);
     const parsed = JSON.parse(decrypted);
+    const state = parsed.state || parsed;
 
-    const drafts: DraftRow[] = Object.entries(parsed.drafts ?? {}).map(([key, value]) => ({
+    const drafts: DraftRow[] = Object.entries(state.drafts ?? {}).map(([key, value]) => ({
       key: key as DocumentType,
       value: JSON.stringify(value),
     }));
 
-    const history: HistoryRow[] = (parsed.history ?? []).map((item: HistoryItem) => ({
+    const history: HistoryRow[] = (state.history ?? []).map((item: HistoryItem) => ({
       id: item.id,
       value: JSON.stringify(item),
     }));
@@ -125,7 +126,14 @@ export const useDocumentStore = create<Store>()(
 
             const history = allHistory.map((row) => JSON.parse(row.value) as HistoryItem);
 
-            return JSON.stringify({ drafts, history });
+            return JSON.stringify({
+              state: {
+                drafts,
+                history,
+                storageError: null,
+              },
+              version: 0,
+            });
           } catch {
             return null;
           }
@@ -135,17 +143,18 @@ export const useDocumentStore = create<Store>()(
 
           try {
             const parsed = JSON.parse(value);
+            const state = parsed.state || parsed;
 
             await db.transaction("rw", db.drafts, db.history, async () => {
               await db.drafts.clear();
               await db.history.clear();
 
-              const drafts: DraftRow[] = Object.entries(parsed.drafts ?? {}).map(([key, val]) => ({
+              const drafts: DraftRow[] = Object.entries(state.drafts ?? {}).map(([key, val]) => ({
                 key: key as DocumentType,
                 value: JSON.stringify(val),
               }));
 
-              const history: HistoryRow[] = (parsed.history ?? []).map((item: HistoryItem) => ({
+              const history: HistoryRow[] = (state.history ?? []).map((item: HistoryItem) => ({
                 id: item.id,
                 value: JSON.stringify(item),
               }));
