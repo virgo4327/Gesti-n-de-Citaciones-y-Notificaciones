@@ -11,7 +11,7 @@ function isDocType(v: string): v is DocumentType {
 export default function EditorPage() {
   const { tipo } = useParams();
   if (!tipo || !isDocType(tipo)) {
-    return <Navigate to="/editor/investigado" replace />;
+    return <Navigate to="/editor/a2" replace />;
   }
   return (
     <>

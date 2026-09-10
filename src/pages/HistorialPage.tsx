@@ -1,4 +1,4 @@
-import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight, FileDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -10,6 +10,7 @@ import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
 import { documentLabels, type DocumentType, type HistoryItem } from "../types";
 import DocumentPreview from "../components/preview/DocumentPreview";
+import { generarWord } from "../lib/docxGenerator";
 
 const PAGE_SIZE = 20;
 
@@ -35,23 +36,27 @@ export default function HistorialPage() {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
-  // Función reutilizable para generar PDF desde historial
+  const handleDownloadWordFromHistory = async (item: HistoryItem) => {
+    try {
+      await generarWord(item.type, item.payload);
+    } catch (e) {
+      alert("Error al descargar archivo Word: " + (e as Error).message);
+    }
+  };
+
   const handleDownloadFromHistory = async (item: HistoryItem) => {
     const container = document.createElement("div");
     container.style.position = "fixed";
     container.style.left = "-9999px";
     container.style.top = "0";
     container.style.width = "794px";
-    container.style.height = "1123px";   // Alto A4
+    container.style.height = "1123px";
     container.style.overflow = "visible";
     document.body.appendChild(container);
 
     const root = ReactDOM.createRoot(container);
-    root.render(
-      <DocumentPreview type={item.type} data={item.payload} />
-    );
+    root.render(<DocumentPreview type={item.type} data={item.payload} />);
 
-    // Más tiempo para renderizado correcto de elementos absolute (logos y pie)
     await new Promise((r) => setTimeout(r, 400));
 
     const element = container.querySelector(".doc-paper") as HTMLElement;
@@ -96,8 +101,8 @@ export default function HistorialPage() {
         <Sidebar />
         <section className="min-h-[calc(100vh-70px)] flex-1 bg-paper p-4 md:p-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-black text-police">Historial</h1>
-            <p className="mt-1 text-slate-600">Documentos generados y guardados localmente.</p>
+            <h1 className="text-3xl font-black text-police">Historial de Emisiones</h1>
+            <p className="mt-1 text-slate-600">Documentos generados y registrados localmente en tu sistema.</p>
           </div>
 
           <div className="mb-5 grid gap-3 rounded-lg border bg-white p-4 shadow-sm md:grid-cols-[1fr_240px]">
@@ -105,7 +110,7 @@ export default function HistorialPage() {
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
               <input
                 className="field pl-10"
-                placeholder="Buscar por número o nombre"
+                placeholder="Buscar por número o nombre de citado/denunciado..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -115,10 +120,11 @@ export default function HistorialPage() {
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as DocumentType | "todos")}
             >
-              <option value="todos">Todos los tipos</option>
-              <option value="investigado">Investigado</option>
-              <option value="testigo">Testigo</option>
-              <option value="notificacion">Notificación</option>
+              <option value="todos">Todos los documentos</option>
+              <option value="a2">A2 - Citación Flagrancia</option>
+              <option value="a3">A3 - Citación Carpeta Fiscal</option>
+              <option value="a4">A4 - Notif. Flagrante Delito</option>
+              <option value="a5">A5 - Notif. Carpeta Fiscal</option>
             </select>
           </div>
 
@@ -127,42 +133,54 @@ export default function HistorialPage() {
               <thead className="bg-police text-white">
                 <tr>
                   <th className="px-4 py-3">N°</th>
-                  <th className="px-4 py-3">Tipo</th>
-                  <th className="px-4 py-3">Nombre</th>
-                  <th className="px-4 py-3">Fecha gen.</th>
-                  <th className="px-4 py-3">Acciones</th>
+                  <th className="px-4 py-3">Documento</th>
+                  <th className="px-4 py-3">Nombre / Citado</th>
+                  <th className="px-4 py-3">Fecha Emisión</th>
+                  <th className="px-4 py-3 text-right">Descargas y Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((item) => (
-                  <tr key={item.id} className="border-t">
-                    <td className="px-4 py-3 font-bold">{item.numero}</td>
-                    <td className="px-4 py-3">{documentLabels[item.type]}</td>
+                  <tr key={item.id} className="border-t hover:bg-slate-50 transition">
+                    <td className="px-4 py-3 font-bold text-police">{item.numero}</td>
+                    <td className="px-4 py-3 font-semibold">{documentLabels[item.type] || item.type.toUpperCase()}</td>
                     <td className="px-4 py-3">{item.nombre}</td>
                     <td className="px-4 py-3">{new Date(item.generatedAt).toLocaleDateString("es-PE")}</td>
-                    <td className="flex gap-2 px-4 py-3">
-                      <Button
-                        type="button"
-                        className="h-9 px-3"
-                        onClick={() => handleDownloadFromHistory(item)}
-                      >
-                        <Download className="h-4 w-4" /> PDF
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        className="h-9 px-3"
-                        onClick={() => deleteHistory(item.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <td className="px-4 py-3 text-right">
+                      <div className="inline-flex gap-2">
+                        {["a2", "a3", "a4", "a5"].includes(item.type) && (
+                          <Button
+                            type="button"
+                            className="h-8 px-2 text-xs bg-blue-700 hover:bg-blue-800 text-white"
+                            onClick={() => handleDownloadWordFromHistory(item)}
+                          >
+                            <FileDown className="h-3.5 w-3.5" /> Word
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="h-8 px-2 text-xs border border-slate-200"
+                          onClick={() => handleDownloadFromHistory(item)}
+                        >
+                          <Download className="h-3.5 w-3.5" /> PDF
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          className="h-8 w-8 px-0"
+                          onClick={() => deleteHistory(item.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
-                      No hay documentos registrados.
+                      No hay documentos registrados en el historial.
                     </td>
                   </tr>
                 )}

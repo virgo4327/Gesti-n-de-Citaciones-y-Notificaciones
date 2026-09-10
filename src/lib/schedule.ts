@@ -1,21 +1,35 @@
-import type { HistoryItem } from "../types";
+import type { HistoryItem, DocumentType } from "../types";
 
 const fechaRegex = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
 const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-export function esFechaValida(fecha: string): boolean {
-  return fechaRegex.test(fecha);
+export function esFechaValida(fecha?: string): boolean {
+  if (!fecha) return false;
+  return fechaRegex.test(fecha.trim());
 }
 
-export function esHoraValida(hora: string): boolean {
-  return horaRegex.test(hora);
+export function esHoraValida(hora?: string): boolean {
+  if (!hora) return false;
+  return horaRegex.test(hora.trim());
 }
 
-export function fechaATimestamp(fecha: string, hora: string): number {
-  if (!esFechaValida(fecha) || !esHoraValida(hora)) return 0;
-  const [dd, mm, aaaa] = fecha.split("/").map(Number);
-  const [hh, min] = hora.split(":").map(Number);
+export function fechaATimestamp(fecha?: string, hora?: string): number {
+  if (!fecha || !hora) return 0;
+  const f = fecha.trim();
+  const h = hora.trim();
+  if (!esFechaValida(f) || !esHoraValida(h)) return 0;
+  const [dd, mm, aaaa] = f.split("/").map(Number);
+  const [hh, min] = h.split(":").map(Number);
   return new Date(aaaa, mm - 1, dd, hh, min).getTime();
+}
+
+/**
+ * Determina si una cita ya venció en relación con la fecha y hora actual de la computadora.
+ */
+export function esCitaPasada(fecha: string, hora: string): boolean {
+  const ts = fechaATimestamp(fecha, hora);
+  if (ts === 0) return false;
+  return ts < Date.now();
 }
 
 export type Conflicto = {
@@ -23,6 +37,38 @@ export type Conflicto = {
   registro: HistoryItem;
   minutosDiferencia?: number;
 };
+
+export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: string; delito: string; nombre: string } {
+  const p = item.payload as any;
+  const type = item.type;
+
+  let fecha = "";
+  let hora = "";
+  let delito = "";
+  let nombre = item.nombre || p.nombre || "";
+
+  if (type === "a2" || type === "a3") {
+    fecha = p.fechaDiligencia || "";
+    hora = p.horaDiligencia || "";
+    delito = p.modalidadDelito || "";
+  } else if (type === "a4" || type === "a5") {
+    fecha = p.fechaDiligencia || "";
+    hora = p.horaDiligencia || "";
+    delito = p.delito || "";
+  } else if (type === "investigado" || type === "testigo") {
+    fecha = p.fechaDiligencia || "";
+    hora = p.hora || "";
+    delito = p.delito || "";
+  } else if (type === "notificacion") {
+    if (p.citados && p.citados.length > 0) {
+      fecha = p.citados[0].fecha || "";
+      hora = p.citados[0].hora || "";
+    }
+    delito = p.delito || "";
+  }
+
+  return { fecha, hora, delito, nombre };
+}
 
 export function detectarConflictos(
   _nombre: string,
@@ -39,40 +85,22 @@ export function detectarConflictos(
   for (const item of history) {
     if (registroExcluirId && item.id === registroExcluirId) continue;
 
-    if (item.type === "investigado" || item.type === "testigo") {
-      const p = item.payload as { nombre: string; fechaDiligencia: string; hora: string };
-      if (!p.fechaDiligencia || !p.hora) continue;
-      const tsExistente = fechaATimestamp(p.fechaDiligencia, p.hora);
-      if (tsExistente === 0) continue;
+    const { fecha, hora: horaExistente } = extraerFechaHora(item);
+    if (!fecha || !horaExistente) continue;
 
-      if (tsNuevo === tsExistente) {
-        conflictos.push({ tipo: "exacto", registro: item });
-      } else {
-        const diffMin = Math.abs(tsNuevo - tsExistente) / 60000;
-        if (diffMin <= 60) {
-          conflictos.push({ tipo: "cercano", registro: item, minutosDiferencia: Math.round(diffMin) });
-        }
-      }
-    }
+    const tsExistente = fechaATimestamp(fecha, horaExistente);
+    if (tsExistente === 0) continue;
 
-    if (item.type === "notificacion") {
-      const p = item.payload as { citados: { nombres: string; fecha: string; hora: string }[] };
-      if (!p.citados) continue;
-      for (const citado of p.citados) {
-        if (!citado.fecha || !citado.hora) continue;
-        const tsExistente = fechaATimestamp(citado.fecha, citado.hora);
-        if (tsExistente === 0) continue;
-
-        if (tsNuevo === tsExistente) {
-          conflictos.push({ tipo: "exacto", registro: item });
-          break;
-        } else {
-          const diffMin = Math.abs(tsNuevo - tsExistente) / 60000;
-          if (diffMin <= 60) {
-            conflictos.push({ tipo: "cercano", registro: item, minutosDiferencia: Math.round(diffMin) });
-            break;
-          }
-        }
+    if (tsNuevo === tsExistente) {
+      conflictos.push({ tipo: "exacto", registro: item });
+    } else {
+      const diffMin = Math.abs(tsNuevo - tsExistente) / 60000;
+      if (diffMin <= 60) {
+        conflictos.push({
+          tipo: "cercano",
+          registro: item,
+          minutosDiferencia: Math.round(diffMin),
+        });
       }
     }
   }
@@ -82,55 +110,37 @@ export function detectarConflictos(
 
 export type AgendaItem = {
   id: string;
-  type: "investigado" | "testigo" | "notificacion";
+  type: DocumentType;
   numero: string;
   nombre: string;
   fecha: string;
   hora: string;
   delito: string;
   timestamp: number;
+  esPasada: boolean;
   esCitado?: boolean;
 };
 
 export function construirAgenda(history: HistoryItem[]): AgendaItem[] {
   const items: AgendaItem[] = [];
+  const now = Date.now();
 
   for (const item of history) {
-    if (item.type === "investigado" || item.type === "testigo") {
-      const p = item.payload as { fechaDiligencia: string; hora: string; delito: string };
-      if (p.fechaDiligencia && p.hora) {
-        items.push({
-          id: item.id,
-          type: item.type,
-          numero: item.numero,
-          nombre: item.nombre,
-          fecha: p.fechaDiligencia,
-          hora: p.hora,
-          delito: p.delito || "",
-          timestamp: fechaATimestamp(p.fechaDiligencia, p.hora),
-        });
-      }
-    }
+    const { fecha, hora, delito, nombre } = extraerFechaHora(item);
 
-    if (item.type === "notificacion") {
-      const p = item.payload as { delito: string; citados: { nombres: string; fecha: string; hora: string }[] };
-      if (p.citados) {
-        for (const citado of p.citados) {
-          if (citado.fecha && citado.hora) {
-            items.push({
-              id: item.id,
-              type: "notificacion",
-              numero: item.numero,
-              nombre: citado.nombres,
-              fecha: citado.fecha,
-              hora: citado.hora,
-              delito: p.delito || "",
-              timestamp: fechaATimestamp(citado.fecha, citado.hora),
-              esCitado: true,
-            });
-          }
-        }
-      }
+    if (fecha && hora) {
+      const ts = fechaATimestamp(fecha, hora);
+      items.push({
+        id: item.id,
+        type: item.type,
+        numero: item.numero,
+        nombre: nombre || item.nombre,
+        fecha,
+        hora,
+        delito,
+        timestamp: ts,
+        esPasada: ts > 0 ? ts < now : false,
+      });
     }
   }
 

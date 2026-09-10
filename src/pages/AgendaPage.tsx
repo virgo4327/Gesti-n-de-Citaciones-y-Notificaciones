@@ -1,33 +1,66 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Trash2, CalendarRange, AlertTriangle, Clock, ChevronDown, ChevronUp, ClipboardX, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  CalendarDays,
+  Trash2,
+  CalendarRange,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  ClipboardX,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  FileDown,
+  CheckCircle2,
+  History,
+} from "lucide-react";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
 import { documentLabels } from "../types";
 import { construirAgenda, agruparPorFecha, formatearFechaDisplay } from "../lib/schedule";
+import { generarWord } from "../lib/docxGenerator";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 6;
 
 const TYPE_COLORS: Record<string, string> = {
-  investigado: "bg-blue-100 text-blue-700",
-  testigo: "bg-emerald-100 text-emerald-700",
-  notificacion: "bg-amber-100 text-amber-700",
+  a2: "bg-blue-100 text-blue-700 border border-blue-200",
+  a3: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+  a4: "bg-amber-100 text-amber-700 border border-amber-200",
+  a5: "bg-rose-100 text-rose-700 border border-rose-200",
+  investigado: "bg-slate-100 text-slate-700",
+  testigo: "bg-slate-100 text-slate-700",
+  notificacion: "bg-slate-100 text-slate-700",
 };
 
 export default function AgendaPage() {
   const { history, deleteHistory, storageError, clearStorageError } = useDocumentStore();
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
+  const [filtroEstado, setFiltroEstado] = useState<"vigentes" | "todas" | "pasadas">("vigentes");
   const [fechaAbierta, setFechaAbierta] = useState<string | null>(null);
   const [confirmarLimpieza, setConfirmarLimpieza] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const agenda = useMemo(() => construirAgenda(history), [history]);
+  // Construir agenda completa
+  const agendaCompleta = useMemo(() => construirAgenda(history), [history]);
 
+  // Aplicar filtro de estado (Vigentes vs Todas vs Pasadas)
+  const agendaFiltradaPorEstado = useMemo(() => {
+    if (filtroEstado === "vigentes") {
+      return agendaCompleta.filter((item) => !item.esPasada);
+    }
+    if (filtroEstado === "pasadas") {
+      return agendaCompleta.filter((item) => item.esPasada);
+    }
+    return agendaCompleta;
+  }, [agendaCompleta, filtroEstado]);
+
+  // Aplicar filtro por tipo de documento
   const filtrada = useMemo(() => {
-    if (filtroTipo === "todos") return agenda;
-    return agenda.filter((i) => i.type === filtroTipo);
-  }, [agenda, filtroTipo]);
+    if (filtroTipo === "todos") return agendaFiltradaPorEstado;
+    return agendaFiltradaPorEstado.filter((i) => i.type === filtroTipo);
+  }, [agendaFiltradaPorEstado, filtroTipo]);
 
   const agrupada = useMemo(() => agruparPorFecha(filtrada), [filtrada]);
 
@@ -54,11 +87,11 @@ export default function AgendaPage() {
   };
 
   const stats = useMemo(() => {
-    const total = agenda.length;
-    const conFechaValida = agenda.filter((i) => i.timestamp > 0).length;
-    const sinFecha = total - conFechaValida;
-    return { total, conFechaValida, sinFecha };
-  }, [agenda]);
+    const total = agendaCompleta.length;
+    const vigentes = agendaCompleta.filter((i) => !i.esPasada).length;
+    const pasadas = agendaCompleta.filter((i) => i.esPasada).length;
+    return { total, vigentes, pasadas };
+  }, [agendaCompleta]);
 
   const toggleFecha = (fecha: string) => {
     setFechaAbierta((prev) => (prev === fecha ? null : fecha));
@@ -71,21 +104,34 @@ export default function AgendaPage() {
     setConfirmarLimpieza(false);
   };
 
+  const handleDescargarWordItem = async (itemId: string) => {
+    const registro = history.find((h) => h.id === itemId);
+    if (!registro) return;
+    try {
+      await generarWord(registro.type, registro.payload);
+    } catch (e) {
+      alert("Error descargando Word: " + (e as Error).message);
+    }
+  };
+
   return (
     <>
       <Navbar />
       <main className="lg:flex">
         <Sidebar />
         <section className="min-h-[calc(100vh-70px)] flex-1 bg-paper p-4 md:p-8">
+          {/* Header */}
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-black text-police">Agenda de citas</h1>
-              <p className="mt-1 text-slate-600">Control y visualización de todas las citaciones programadas.</p>
+              <h1 className="text-3xl font-black text-police">Agenda y Programación</h1>
+              <p className="mt-1 text-slate-600">
+                Control de diligencias programadas con filtrado automático en tiempo real.
+              </p>
             </div>
             <div className="flex gap-2">
               {confirmarLimpieza ? (
                 <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2">
-                  <span className="text-sm text-red-700">¿Eliminar todo el historial?</span>
+                  <span className="text-sm text-red-700">¿Eliminar todo el registro?</span>
                   <Button variant="danger" className="h-8 px-3 text-xs" onClick={handleClearAllHistory}>
                     Confirmar
                   </Button>
@@ -95,54 +141,116 @@ export default function AgendaPage() {
                 </div>
               ) : (
                 <Button variant="danger" onClick={() => setConfirmarLimpieza(true)} disabled={history.length === 0}>
-                  <ClipboardX className="h-4 w-4" /> Limpiar historial
+                  <ClipboardX className="h-4 w-4" /> Limpiar Todo
                 </Button>
               )}
             </div>
           </div>
 
+          {/* Tarjetas de estadísticas */}
           <div className="mb-5 grid gap-3 sm:grid-cols-3">
-            <div className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 shadow-sm">
+            <div
+              onClick={() => setFiltroEstado("vigentes")}
+              className={`cursor-pointer flex items-center justify-between rounded-lg border p-4 shadow-sm transition ${
+                filtroEstado === "vigentes" ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20" : "bg-white hover:bg-slate-50"
+              }`}
+            >
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Total citas</p>
-                <p className="mt-0.5 text-xl font-black text-slate-950">{stats.total}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Vigentes / Pendientes</p>
+                <p className="mt-0.5 text-2xl font-black text-emerald-800">{stats.vigentes}</p>
+                <p className="text-[11px] text-slate-500">Por atender (hora no vencida)</p>
               </div>
-              <CalendarDays className="h-5 w-5 text-police" />
+              <CheckCircle2 className="h-6 w-6 text-emerald-600" />
             </div>
-            <div className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 shadow-sm">
+
+            <div
+              onClick={() => setFiltroEstado("pasadas")}
+              className={`cursor-pointer flex items-center justify-between rounded-lg border p-4 shadow-sm transition ${
+                filtroEstado === "pasadas" ? "bg-amber-50 border-amber-400 ring-2 ring-amber-500/20" : "bg-white hover:bg-slate-50"
+              }`}
+            >
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Con fecha válida</p>
-                <p className="mt-0.5 text-xl font-black text-emerald-600">{stats.conFechaValida}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-amber-700">Concluidas / Pasadas</p>
+                <p className="mt-0.5 text-2xl font-black text-amber-800">{stats.pasadas}</p>
+                <p className="text-[11px] text-slate-500">Hora programada ya transcurrió</p>
               </div>
-              <CalendarRange className="h-5 w-5 text-emerald-600" />
+              <History className="h-6 w-6 text-amber-600" />
             </div>
-            <div className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 shadow-sm">
+
+            <div
+              onClick={() => setFiltroEstado("todas")}
+              className={`cursor-pointer flex items-center justify-between rounded-lg border p-4 shadow-sm transition ${
+                filtroEstado === "todas" ? "bg-blue-50 border-blue-400 ring-2 ring-blue-500/20" : "bg-white hover:bg-slate-50"
+              }`}
+            >
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Sin fecha válida</p>
-                <p className="mt-0.5 text-xl font-black text-amber-600">{stats.sinFecha}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-police">Total Registradas</p>
+                <p className="mt-0.5 text-2xl font-black text-slate-950">{stats.total}</p>
+                <p className="text-[11px] text-slate-500">Historial global de citaciones</p>
               </div>
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <CalendarRange className="h-6 w-6 text-police" />
             </div>
           </div>
 
-          <div className="mb-4">
+          {/* Filtros de visualización */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-600 uppercase">Mostrar:</span>
+              <div className="flex rounded-md border bg-slate-100 p-0.5 text-xs font-bold">
+                <button
+                  onClick={() => setFiltroEstado("vigentes")}
+                  className={`rounded px-3 py-1.5 transition ${
+                    filtroEstado === "vigentes" ? "bg-white text-police shadow-sm" : "text-slate-600 hover:text-police"
+                  }`}
+                >
+                  🟢 Vigentes ({stats.vigentes})
+                </button>
+                <button
+                  onClick={() => setFiltroEstado("todas")}
+                  className={`rounded px-3 py-1.5 transition ${
+                    filtroEstado === "todas" ? "bg-white text-police shadow-sm" : "text-slate-600 hover:text-police"
+                  }`}
+                >
+                  📋 Todas ({stats.total})
+                </button>
+                <button
+                  onClick={() => setFiltroEstado("pasadas")}
+                  className={`rounded px-3 py-1.5 transition ${
+                    filtroEstado === "pasadas" ? "bg-white text-police shadow-sm" : "text-slate-600 hover:text-police"
+                  }`}
+                >
+                  ⏳ Concluidas ({stats.pasadas})
+                </button>
+              </div>
+            </div>
+
             <select
-              className="field w-auto"
+              className="field w-auto text-xs font-semibold py-1.5"
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
             >
-              <option value="todos">Todos los tipos</option>
-              <option value="investigado">Citación Investigado</option>
-              <option value="testigo">Citación Testigo</option>
-              <option value="notificacion">Notificación</option>
+              <option value="todos">Todos los documentos</option>
+              <option value="a2">A2 - Citación Flagrancia</option>
+              <option value="a3">A3 - Citación Carpeta Fiscal</option>
+              <option value="a4">A4 - Notif. Flagrante Delito</option>
+              <option value="a5">A5 - Notif. Carpeta Fiscal</option>
             </select>
           </div>
 
+          {/* Listado de fechas */}
           {fechas.length === 0 ? (
             <div className="rounded-lg border bg-white p-10 text-center shadow-sm">
               <CalendarDays className="mx-auto mb-3 h-12 w-12 text-slate-300" />
-              <p className="text-lg font-bold text-slate-500">No hay citas programadas</p>
-              <p className="mt-1 text-sm text-slate-400">Los documentos generados aparecerán aquí automáticamente.</p>
+              <p className="text-lg font-bold text-slate-600">
+                {filtroEstado === "vigentes"
+                  ? "No hay citas pendientes por atender"
+                  : "No hay citas en este filtro"}
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                {filtroEstado === "vigentes"
+                  ? "Las citas cuya hora ya transcurrió se ocultan automáticamente. Puedes verlas en 'Todas' o 'Concluidas'."
+                  : "Los documentos emitidos aparecerán aquí automáticamente."}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -150,7 +258,7 @@ export default function AgendaPage() {
                 const items = agrupada.get(fecha) ?? [];
                 const abierta = fechaAbierta === fecha;
                 const fechaDisplay = formatearFechaDisplay(fecha);
-                const esFechaValida = items.some((i) => i.timestamp > 0);
+                const citasVigentesEnFecha = items.filter((i) => !i.esPasada).length;
 
                 return (
                   <div key={fecha} className="overflow-hidden rounded-lg border bg-white shadow-sm">
@@ -163,63 +271,85 @@ export default function AgendaPage() {
                           <CalendarDays className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="font-black text-police">
-                            {esFechaValida ? fechaDisplay : fecha}
-                          </p>
+                          <p className="font-black text-police text-base">{fechaDisplay}</p>
                           <p className="text-xs text-slate-500">
-                            {items.length} cita{items.length !== 1 ? "s" : ""} programada{items.length !== 1 ? "s" : ""}
+                            {items.length} diligencia{items.length !== 1 ? "s" : ""} programada{items.length !== 1 ? "s" : ""}{" "}
+                            {citasVigentesEnFecha > 0 && (
+                              <span className="ml-1 inline-block rounded bg-emerald-100 px-1.5 py-0.2 text-[11px] font-bold text-emerald-800">
+                                {citasVigentesEnFecha} pendiente{citasVigentesEnFecha !== 1 ? "s" : ""}
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
-                      {abierta ? (
-                        <ChevronUp className="h-5 w-5 text-slate-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-slate-400" />
-                      )}
+                      {abierta ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
                     </button>
 
                     {abierta && (
-                      <div className="border-t">
-                        <table className="w-full text-left text-sm">
+                      <div className="border-t overflow-x-auto">
+                        <table className="w-full text-left text-sm min-w-[700px]">
                           <thead className="bg-slate-100 text-xs uppercase text-slate-600">
                             <tr>
-                              <th className="px-4 py-2">Hora</th>
-                              <th className="px-4 py-2">Tipo</th>
-                              <th className="px-4 py-2">N°</th>
-                              <th className="px-4 py-2">Nombre</th>
-                              <th className="px-4 py-2">Delito</th>
-                              <th className="px-4 py-2">Acción</th>
+                              <th className="px-4 py-2.5">Hora</th>
+                              <th className="px-4 py-2.5">Estado</th>
+                              <th className="px-4 py-2.5">Tipo</th>
+                              <th className="px-4 py-2.5">N°</th>
+                              <th className="px-4 py-2.5">Nombre / Citado</th>
+                              <th className="px-4 py-2.5">Delito</th>
+                              <th className="px-4 py-2.5 text-right">Acciones</th>
                             </tr>
                           </thead>
                           <tbody>
                             {items.map((item, idx) => (
-                              <tr key={`${item.id}-${idx}`} className="border-t">
-                                <td className="px-4 py-2">
-                                  {item.timestamp > 0 ? (
-                                    <span className="inline-flex items-center gap-1 font-bold text-slate-700">
-                                      <Clock className="h-3.5 w-3.5" /> {item.hora}
-                                    </span>
-                                  ) : (
-                                    <span className="text-amber-600 text-xs">Sin hora válida</span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-2">
-                                  <span className={`inline-block rounded px-2 py-0.5 text-xs font-bold ${TYPE_COLORS[item.type] ?? "bg-slate-100 text-slate-600"}`}>
-                                    {item.esCitado ? "Citado" : documentLabels[item.type]}
+                              <tr
+                                key={`${item.id}-${idx}`}
+                                className={`border-t transition hover:bg-slate-50 ${item.esPasada ? "bg-slate-50/60 opacity-85" : ""}`}
+                              >
+                                <td className="px-4 py-2.5">
+                                  <span className="inline-flex items-center gap-1 font-bold text-slate-800">
+                                    <Clock className="h-3.5 w-3.5 text-police" /> {item.hora || "Sin hora"}
                                   </span>
                                 </td>
-                                <td className="px-4 py-2 font-bold">{item.numero}</td>
-                                <td className="px-4 py-2">{item.nombre}</td>
-                                <td className="px-4 py-2 text-slate-500 text-xs">{item.delito}</td>
-                                <td className="px-4 py-2">
-                                  <Button
-                                    type="button"
-                                    variant="danger"
-                                    className="h-8 w-8 px-0"
-                                    onClick={() => deleteHistory(item.id)}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
+                                <td className="px-4 py-2.5">
+                                  {item.esPasada ? (
+                                    <span className="inline-block rounded bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
+                                      Concluida
+                                    </span>
+                                  ) : (
+                                    <span className="inline-block rounded bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                                      Pendiente
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  <span className={`inline-block rounded px-2 py-0.5 text-xs font-bold ${TYPE_COLORS[item.type] ?? "bg-slate-100 text-slate-600"}`}>
+                                    {documentLabels[item.type] || item.type.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2.5 font-bold text-police">{item.numero}</td>
+                                <td className="px-4 py-2.5 font-semibold text-slate-900">{item.nombre}</td>
+                                <td className="px-4 py-2.5 text-slate-600 text-xs">{item.delito || "—"}</td>
+                                <td className="px-4 py-2.5 text-right">
+                                  <div className="inline-flex items-center gap-1">
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      className="h-8 px-2 text-xs border border-blue-200 text-blue-700 hover:bg-blue-50"
+                                      title="Descargar en Word (.docx)"
+                                      onClick={() => handleDescargarWordItem(item.id)}
+                                    >
+                                      <FileDown className="h-3.5 w-3.5" /> Word
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="danger"
+                                      className="h-8 w-8 px-0"
+                                      title="Eliminar de la agenda"
+                                      onClick={() => deleteHistory(item.id)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
