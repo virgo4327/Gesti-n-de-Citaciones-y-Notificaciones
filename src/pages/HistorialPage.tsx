@@ -59,7 +59,7 @@ export default function HistorialPage() {
 
     await new Promise((r) => setTimeout(r, 400));
 
-    const element = container.querySelector(".doc-paper") as HTMLElement;
+    const element = container.querySelector(".docx-preview-container") as HTMLElement;
     if (!element) {
       alert("Error al generar el PDF");
       root.unmount();

@@ -145,7 +145,7 @@ export default function EditorLayout({ type }: { type: DocumentType }) {
 
       await new Promise((resolve) => setTimeout(resolve, 400));
 
-      const previewElement = container.querySelector(".doc-paper") as HTMLElement;
+      const previewElement = container.querySelector(".docx-preview-container") as HTMLElement;
       if (!previewElement) {
         throw new Error("No se encontró el elemento del documento para capturar.");
       }
