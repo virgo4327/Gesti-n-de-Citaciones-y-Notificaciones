@@ -98,7 +98,10 @@ export default function OperationalDashboard() {
             {DOCUMENT_CARDS.map((doc) => (
               <button
                 key={doc.label}
-                onClick={() => window.open(doc.file, "_blank", "noopener,noreferrer")}
+                onClick={() => {
+                  const fullUrl = `${window.location.origin}${doc.file}`;
+                  window.open(`ms-word:ofe|u|${encodeURIComponent(fullUrl)}`, "_blank", "noopener,noreferrer");
+                }}
                 className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
               >
                 <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-md text-white ${COLOR_MAP[doc.color]}`}>
