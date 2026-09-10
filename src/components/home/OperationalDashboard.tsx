@@ -2,53 +2,130 @@ import {
   FilePlus2,
   History,
   ShieldCheck,
-  Pencil,
-  Trash2,
   FileText,
   CalendarDays,
+  AlertTriangle,
+  X,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useDocumentStore } from "../../store/documentStore";
-import { documentLabels } from "../../types";
-import { moduleData } from "../../constants";
 import type { DocumentType } from "../../types";
 
-const moduleCards = moduleData.map(({ label, href, icon, color }) => ({
-  title: label,
-  description: label === "Citación Investigado"
-    ? "Citar a imputados en investigaciones por corrupción."
-    : label === "Citación Testigo"
-    ? "Programar manifestación testimonial con formato oficial."
-    : "Registrar diligencias con tabla de citados y horarios.",
-  href,
-  Icon: icon as React.ComponentType<{ className?: string }>,
-  accent: color === "blue" ? "bg-blue-600" : color === "emerald" ? "bg-emerald-600" : "bg-amber-600",
-}));
+const TEMPLATE_FILES: Record<string, string> = {
+  a2: "/plantillas/A2 - Citación (víctima, testigo, perito, depositario u otro) caso de flagrancia.docx",
+  a3: "/plantillas/A3 - Citación (víctima, testigo, perito, depositario u otro) - Carpeta Fiscal.docx",
+  a4: "/plantillas/A4 - Notificación - Denunciado - Flagrante Delito.docx",
+  a5: "/plantillas/A5 - Notificación - Denunciado - Carpeta Fiscal.docx",
+};
+
+const DOCUMENT_CARDS = [
+  {
+    key: "a2" as DocumentType,
+    label: "A2 - Citación Flagrancia",
+    description: "Citación a víctima, testigo, perito, depositario u otro en caso de flagrancia.",
+    color: "blue",
+    file: TEMPLATE_FILES.a2,
+  },
+  {
+    key: "a3" as DocumentType,
+    label: "A3 - Citación Carpeta Fiscal",
+    description: "Citación a víctima, testigo, perito, depositario u otro por Carpeta Fiscal.",
+    color: "emerald",
+    file: TEMPLATE_FILES.a3,
+  },
+  {
+    key: "a4" as DocumentType,
+    label: "A4 - Notif. Flagrante Delito",
+    description: "Notificación policial a denunciado por flagrante delito.",
+    color: "amber",
+    file: TEMPLATE_FILES.a4,
+  },
+  {
+    key: "a5" as DocumentType,
+    label: "A5 - Notif. Carpeta Fiscal",
+    description: "Notificación policial a denunciado con disposición fiscal a folios.",
+    color: "rose",
+    file: TEMPLATE_FILES.a5,
+  },
+];
+
+const COLOR_MAP: Record<string, string> = {
+  blue: "bg-blue-600",
+  emerald: "bg-emerald-600",
+  amber: "bg-amber-600",
+  rose: "bg-rose-600",
+};
 
 export default function OperationalDashboard() {
-  const { history, drafts, clearDraft } = useDocumentStore();
-  const navigate = useNavigate();
-
-  const draftEntries = Object.entries(drafts) as [DocumentType, any][];
+  const { history, addHistory } = useDocumentStore();
+  const [openType, setOpenType] = useState<DocumentType | null>(null);
+  const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [opening, setOpening] = useState(false);
 
   const stats = [
-    { label: "Sistema",   value: "Operativo" },
+    { label: "Sistema", value: "Operativo" },
     { label: "Generados", value: String(history.length) },
-    { label: "Borradores",value: String(draftEntries.length) },
   ];
-  const latest = history.slice(0, 3);
 
-  const handleLoadDraft = (type: DocumentType) => {
-    navigate(`/editor/${type}`);
+  const detectarConflicto = (): boolean => {
+    if (!form.nombre || !form.fecha || !form.hora) return false;
+    return history.some((item) => {
+      if (item.type !== (openType ?? "a2")) return false;
+      const itemFecha = new Date((item.payload as any).fechaDiligencia || item.generatedAt).toISOString().slice(0, 10);
+      const itemHora = (item.payload as any).horaDiligencia || (item.payload as any).hora || "";
+      return item.nombre === form.nombre && itemFecha === form.fecha && itemHora === form.hora;
+    });
+  };
+
+  const handleOpenTemplate = async () => {
+    if (!openType) return;
+    setError(null);
+    if (!form.numero || !form.nombre || !form.fecha || !form.hora) {
+      setError("Complete número, nombre, fecha y hora de la diligencia.");
+      return;
+    }
+    if (detectarConflicto()) {
+      setError("Ya existe una diligencia con el mismo nombre, fecha y hora. No se permiten duplicados.");
+      return;
+    }
+
+    setOpening(true);
+    try {
+      const response = await fetch(TEMPLATE_FILES[openType]);
+      if (!response.ok) throw new Error("No se pudo abrir la plantilla.");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${openType.toUpperCase()}_Nro_${form.numero}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      addHistory(openType, {
+        numero: form.numero,
+        nombre: form.nombre,
+        fechaDiligencia: form.fecha,
+        horaDiligencia: form.hora,
+      } as any);
+
+      setForm({ numero: "", nombre: "", fecha: "", hora: "" });
+      setOpenType(null);
+    } catch (e) {
+      setError("Error al abrir el documento.");
+    } finally {
+      setOpening(false);
+    }
   };
 
   return (
     <main className="bg-slate-100 px-4 py-5 md:px-8 lg:px-10">
       <section className="mx-auto max-w-6xl space-y-4">
-
-        {/* ── Panel de título ── */}
         <motion.div
           className="rounded-lg border bg-white p-5 shadow-sm"
           initial={{ opacity: 0, y: 10 }}
@@ -57,43 +134,28 @@ export default function OperationalDashboard() {
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-wide text-action">
-                DEPDICC – Iquitos
-              </p>
-              <h1 className="mt-1 text-2xl font-black text-police md:text-3xl">
-                Gestión de Citaciones y Notificaciones
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Emisión rápida de documentos oficiales con historial local.
-              </p>
+              <p className="text-xs font-black uppercase tracking-wide text-action">DEPDICC – Iquitos</p>
+              <h1 className="mt-1 text-2xl font-black text-police md:text-3xl">Gestión de Citaciones y Notificaciones</h1>
+              <p className="mt-1 text-sm text-slate-600">Seleccione una plantilla para abrir en Word y registrar la diligencia.</p>
             </div>
             <div className="flex gap-2">
-              <Button asChild>
-                <a href="#crear">
-                  <FilePlus2 className="h-4 w-4" /> Nuevo documento
-                </a>
-              </Button>
-              <Button asChild variant="secondary" className="border border-slate-200">
-                <Link to="/historial">
+              <Link to="/historial">
+                <Button variant="secondary" className="border border-slate-200">
                   <History className="h-4 w-4" /> Historial
-                </Link>
-              </Button>
-              <Button asChild variant="secondary" className="border border-slate-200">
-                <Link to="/agenda">
+                </Button>
+              </Link>
+              <Link to="/agenda">
+                <Button variant="secondary" className="border border-slate-200">
                   <CalendarDays className="h-4 w-4" /> Agenda
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
         </motion.div>
 
-        {/* ── Stats ── */}
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {stats.map((s) => (
-            <div
-              key={s.label}
-              className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 shadow-sm"
-            >
+            <div key={s.label} className="flex items-center justify-between rounded-lg border bg-white px-4 py-3 shadow-sm">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{s.label}</p>
                 <p className="mt-0.5 text-xl font-black text-slate-950">{s.value}</p>
@@ -103,106 +165,111 @@ export default function OperationalDashboard() {
           ))}
         </div>
 
-        {/* ── Crear documento ── */}
-        <section id="crear" className="scroll-mt-28 rounded-lg border bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black text-police">Crear documento</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {moduleCards.map(({ title, description, href, Icon, accent }) => (
-              <Link
-                key={href}
-                to={href}
-                className="group rounded-lg border border-slate-200 p-5 transition hover:border-police hover:shadow-md"
+        <section className="scroll-mt-28 rounded-lg border bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-black text-police">Plantillas oficiales</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {DOCUMENT_CARDS.map((doc) => (
+              <button
+                key={doc.key}
+                onClick={() => {
+                  setOpenType(doc.key);
+                  setError(null);
+                }}
+                className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
               >
-                <div
-                  className={`mb-3 flex h-10 w-10 items-center justify-center rounded-md text-white ${accent}`}
-                >
-                  <Icon className="h-5 w-5" />
+                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-md text-white ${COLOR_MAP[doc.color]}`}>
+                  <FileText className="h-5 w-5" />
                 </div>
-                <h3 className="font-black text-slate-900">{title}</h3>
-                <p className="mt-2 text-sm leading-5 text-slate-600">{description}</p>
+                <h3 className="font-black text-slate-900">{doc.label}</h3>
+                <p className="mt-2 text-sm leading-5 text-slate-600">{doc.description}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-extrabold text-action group-hover:gap-2 transition-all">
-                  Abrir <FilePlus2 className="h-4 w-4" />
+                  Abrir plantilla <FilePlus2 className="h-4 w-4" />
                 </span>
-              </Link>
+              </button>
             ))}
           </div>
         </section>
-
-        {/* ── Borradores guardados ── */}
-        <section className="rounded-lg border bg-white p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-black text-police">Borradores guardados</h2>
-            <FileText className="h-5 w-5 text-slate-400" />
-          </div>
-          {draftEntries.length === 0 ? (
-            <p className="text-sm text-slate-500">Sin borradores guardados.</p>
-          ) : (
-            <div className="grid gap-2">
-              {draftEntries.map(([type, draft]) => (
-                <div
-                  key={type}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 px-4 py-3 text-sm"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-100 text-amber-700">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-black text-police">{documentLabels[type]}</p>
-                      <p className="text-xs text-slate-500">
-                        {draft.nombre ? `N° ${draft.numero} — ${draft.nombre}` : "Sin datos completos"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      className="h-8 px-3 text-xs border border-slate-200"
-                      onClick={() => handleLoadDraft(type)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" /> Editar
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="h-8 px-3 text-red-500 hover:bg-red-50 hover:text-red-600"
-                      onClick={() => clearDraft(type)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* ── Últimos documentos ── */}
-        <section className="rounded-lg border bg-white p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-black text-police">Últimos documentos</h2>
-            <Button asChild variant="ghost" className="h-9">
-              <Link to="/historial">Ver historial</Link>
-            </Button>
-          </div>
-          {latest.length === 0 ? (
-            <p className="text-sm text-slate-500">Sin documentos generados aún.</p>
-          ) : (
-            <div className="grid gap-2">
-              {latest.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-wrap items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm sm:grid-cols-[80px_1fr_180px] sm:items-center"
-                >
-                  <span className="font-black text-police">N° {item.numero}</span>
-                  <span className="font-semibold text-slate-800">{item.nombre}</span>
-                  <span className="text-slate-500">{documentLabels[item.type]}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
       </section>
+
+      <AnimatePresence>
+        {openType && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-black text-slate-900">Registrar diligencia</h3>
+                <button onClick={() => setOpenType(null)} className="text-slate-500 hover:text-slate-800">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="mb-4 text-sm text-slate-600">Complete los datos para abrir la plantilla y registrar la diligencia en la Agenda.</p>
+              {error && (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+              <div className="grid gap-3">
+                <div>
+                  <label className="label">Número</label>
+                  <input
+                    className="field"
+                    value={form.numero}
+                    onChange={(e) => setForm({ ...form, numero: e.target.value })}
+                    placeholder="Ej: 001"
+                  />
+                </div>
+                <div>
+                  <label className="label">Nombre / Citado</label>
+                  <input
+                    className="field"
+                    value={form.nombre}
+                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    placeholder="Ej: JUAN CARLOS PÉREZ"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Fecha</label>
+                    <input
+                      type="date"
+                      className="field"
+                      value={form.fecha}
+                      onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Hora</label>
+                    <input
+                      type="time"
+                      className="field"
+                      value={form.hora}
+                      onChange={(e) => setForm({ ...form, hora: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <Button variant="secondary" className="border border-slate-200" onClick={() => setOpenType(null)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleOpenTemplate} disabled={opening}>
+                  {opening ? "Abriendo..." : "Abrir plantilla y registrar"}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

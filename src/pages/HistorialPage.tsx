@@ -1,4 +1,4 @@
-import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight, FileDown } from "lucide-react";
+import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -8,16 +8,15 @@ import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
-import { documentLabels, type DocumentType, type HistoryItem } from "../types";
+import { documentLabels } from "../types";
 import DocumentPreview from "../components/preview/DocumentPreview";
-import { generarWord } from "../lib/docxGenerator";
 
 const PAGE_SIZE = 20;
 
 export default function HistorialPage() {
   const { history, deleteHistory, storageError, clearStorageError } = useDocumentStore();
   const [query, setQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<DocumentType | "todos">("todos");
+  const [typeFilter, setTypeFilter] = useState<string>("todos");
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
@@ -36,15 +35,7 @@ export default function HistorialPage() {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
-  const handleDownloadWordFromHistory = async (item: HistoryItem) => {
-    try {
-      await generarWord(item.type, item.payload);
-    } catch (e) {
-      alert("Error al descargar archivo Word: " + (e as Error).message);
-    }
-  };
-
-  const handleDownloadFromHistory = async (item: HistoryItem) => {
+  const handleDownloadPdfFromHistory = async (item: any) => {
     const container = document.createElement("div");
     container.style.position = "fixed";
     container.style.left = "-9999px";
@@ -57,41 +48,47 @@ export default function HistorialPage() {
     const root = ReactDOM.createRoot(container);
     root.render(<DocumentPreview type={item.type} data={item.payload} />);
 
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 800));
 
-    const element = container.querySelector(".docx-preview-container") as HTMLElement;
+    const element = container.querySelector(".docx-preview-container") as HTMLElement | null;
     if (!element) {
-      alert("Error al generar el PDF");
+      alert("No se encontró el documento para generar el PDF.");
       root.unmount();
       document.body.removeChild(container);
       return;
     }
 
-    const canvas = await html2canvas(element, { scale: 2 });
-    root.unmount();
-    document.body.removeChild(container);
+    try {
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      root.unmount();
+      document.body.removeChild(container);
 
-    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-    const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+      const imgData = canvas.toDataURL("image/png");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    let heightLeft = imgHeight;
-    let position = 0;
+      let heightLeft = imgHeight;
+      let position = 0;
 
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pdfHeight;
-    }
 
-    pdf.save(`${item.numero}-${item.type}.pdf`);
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save(`${item.numero}-${item.type}.pdf`);
+    } catch (e) {
+      root.unmount();
+      document.body.removeChild(container);
+      alert("Error generando PDF: " + (e as Error).message);
+    }
   };
 
   return (
@@ -118,7 +115,7 @@ export default function HistorialPage() {
             <select
               className="field"
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as DocumentType | "todos")}
+              onChange={(e) => setTypeFilter(e.target.value)}
             >
               <option value="todos">Todos los documentos</option>
               <option value="a2">A2 - Citación Flagrancia</option>
@@ -152,19 +149,11 @@ export default function HistorialPage() {
                           <Button
                             type="button"
                             className="h-8 px-2 text-xs bg-blue-700 hover:bg-blue-800 text-white"
-                            onClick={() => handleDownloadWordFromHistory(item)}
+                            onClick={() => handleDownloadPdfFromHistory(item)}
                           >
-                            <FileDown className="h-3.5 w-3.5" /> Word
+                            <Download className="h-3.5 w-3.5" /> PDF
                           </Button>
                         )}
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          className="h-8 px-2 text-xs border border-slate-200"
-                          onClick={() => handleDownloadFromHistory(item)}
-                        >
-                          <Download className="h-3.5 w-3.5" /> PDF
-                        </Button>
                         <Button
                           type="button"
                           variant="danger"
