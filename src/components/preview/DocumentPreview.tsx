@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import mammoth from "mammoth";
+import { useEffect, useRef, useState } from "react";
+import { renderAsync } from "docx-preview";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { parsearFechaDocumento } from "../../lib/docxGenerator";
@@ -18,7 +18,6 @@ interface Props {
 }
 
 export default function DocumentPreview({ type, data }: Props) {
-  const [html, setHtml] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,7 +44,6 @@ export default function DocumentPreview({ type, data }: Props) {
 
         const arrayBuffer = await response.arrayBuffer();
 
-        // Inyectar datos del formulario en la plantilla Word
         const zip = new PizZip(arrayBuffer);
         const doc = new Docxtemplater(zip, {
           paragraphLoop: true,
@@ -63,24 +61,35 @@ export default function DocumentPreview({ type, data }: Props) {
           anioDoc,
         });
 
-        // Obtener el buffer del docx con datos inyectados
         const renderedBuffer = doc.getZip().generate({ type: "arraybuffer" });
 
-        // Convertir el docx renderizado a HTML usando mammoth (imágenes en base64)
-        const result = await mammoth.convertToHtml(
-          { arrayBuffer: renderedBuffer },
-          {
-            convertImage: mammoth.images.imgElement(async (image) => {
-              const buffer = await image.read("base64");
-              return {
-                src: `data:${image.contentType};base64,${buffer}`,
-              };
-            }),
-          }
-        );
+        const container = containerRef.current;
+        if (container && !cancelled) {
+          container.innerHTML = "";
+          await renderAsync(
+            renderedBuffer,
+            container as HTMLElement,
+            undefined,
+            {
+              className: "docx-preview-content",
+              inWrapper: true,
+              ignoreWidth: false,
+              ignoreHeight: false,
+              ignoreFonts: false,
+              breakPages: true,
+              experimental: false,
+              trimXmlDeclaration: true,
+              useBase64URL: true,
+              renderChanges: false,
+              renderHeaders: true,
+              renderFooters: true,
+              renderFootnotes: true,
+              renderEndnotes: true,
+            }
+          );
+        }
 
         if (!cancelled) {
-          setHtml(result.value);
           setLoading(false);
         }
       } catch (err: any) {
@@ -157,10 +166,10 @@ export default function DocumentPreview({ type, data }: Props) {
   return (
     <>
       <style>{`
+        .docx-preview-container { font-family: Arial, Helvetica, sans-serif; }
         .docx-preview-container img { max-width: 100%; height: auto; }
         .docx-preview-container table { border-collapse: collapse; width: 100%; }
         .docx-preview-container td, .docx-preview-container th { border: 1px solid #ccc; padding: 4px 8px; }
-        .docx-preview-container p { margin: 0 0 6px 0; }
       `}</style>
       <div
         ref={containerRef}
@@ -171,15 +180,9 @@ export default function DocumentPreview({ type, data }: Props) {
           background: "#fff",
           boxShadow: "0 2px 24px rgba(0,0,0,0.12)",
           borderRadius: 4,
-          padding: "32px 48px",
           boxSizing: "border-box",
-          fontFamily: "Arial, sans-serif",
-          fontSize: 13,
-          lineHeight: 1.5,
-          color: "#1e1e1e",
           overflowX: "hidden",
         }}
-        dangerouslySetInnerHTML={{ __html: html }}
       />
     </>
   );
