@@ -96,12 +96,10 @@ export default function OperationalDashboard() {
           <p className="mt-1 text-sm text-slate-600">Al hacer clic se abre el documento Word para editar y guardar desde tu equipo.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {DOCUMENT_CARDS.map((doc) => (
-              <a
+              <button
                 key={doc.label}
-                href={doc.file}
-                target="_blank"
-                rel="noreferrer"
-                className="group rounded-lg border border-slate-200 p-5 transition hover:border-police hover:shadow-md"
+                onClick={() => window.open(doc.file, "_blank", "noopener,noreferrer")}
+                className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
               >
                 <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-md text-white ${COLOR_MAP[doc.color]}`}>
                   <FileText className="h-5 w-5" />
@@ -111,7 +109,7 @@ export default function OperationalDashboard() {
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-extrabold text-action group-hover:gap-2 transition-all">
                   Abrir plantilla <FilePlus2 className="h-4 w-4" />
                 </span>
-              </a>
+              </button>
             ))}
           </div>
         </section>
