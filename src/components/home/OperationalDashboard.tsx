@@ -1,7 +1,10 @@
-import { FilePlus2, History, ShieldCheck, FileText, CalendarDays } from "lucide-react";
+import { FilePlus2, History, ShieldCheck, FileText, CalendarDays, AlertTriangle, X } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
+import { useDocumentStore } from "../../store/documentStore";
+import type { DocumentType } from "../../types";
 
 const TEMPLATE_FILES: Record<string, string> = {
   a2: "https://docs.google.com/document/d/18ujh0XUk67mOSGsRgjMh1cCv7d_-Dt9MajdH4pz5H6c/edit?usp=sharing",
@@ -12,24 +15,28 @@ const TEMPLATE_FILES: Record<string, string> = {
 
 const DOCUMENT_CARDS = [
   {
+    key: "a2" as DocumentType,
     label: "A2 - Citación Flagrancia",
     description: "Citación a víctima, testigo, perito, depositario u otro en caso de flagrancia.",
     color: "blue",
     file: TEMPLATE_FILES.a2,
   },
   {
+    key: "a3" as DocumentType,
     label: "A3 - Citación Carpeta Fiscal",
     description: "Citación a víctima, testigo, perito, depositario u otro por Carpeta Fiscal.",
     color: "emerald",
     file: TEMPLATE_FILES.a3,
   },
   {
+    key: "a4" as DocumentType,
     label: "A4 - Notif. Flagrante Delito",
     description: "Notificación policial a denunciado por flagrante delito.",
     color: "amber",
     file: TEMPLATE_FILES.a4,
   },
   {
+    key: "a5" as DocumentType,
     label: "A5 - Notif. Carpeta Fiscal",
     description: "Notificación policial a denunciado con disposición fiscal a folios.",
     color: "rose",
@@ -45,12 +52,58 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 export default function OperationalDashboard() {
+  const { history, addHistory } = useDocumentStore();
+  const [openType, setOpenType] = useState<DocumentType | null>(null);
+  const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [opening, setOpening] = useState(false);
+
   const stats = [
     { label: "Sistema", value: "Operativo" },
+    { label: "Registrados", value: String(history.length) },
   ];
 
-  const abrirPlantilla = (file: string) => {
-    window.open(file, "_blank", "noopener,noreferrer");
+  const detectarConflicto = (): boolean => {
+    if (!form.nombre || !form.fecha || !form.hora) return false;
+    return history.some((item) => {
+      if (item.type !== (openType ?? "a2")) return false;
+      const itemFecha = new Date((item.payload as any).fechaDiligencia || item.generatedAt).toISOString().slice(0, 10);
+      const itemHora = (item.payload as any).horaDiligencia || (item.payload as any).hora || "";
+      return item.nombre === form.nombre && itemFecha === form.fecha && itemHora === form.hora;
+    });
+  };
+
+  const handleOpenTemplate = async () => {
+    if (!openType) return;
+    setError(null);
+    if (!form.numero || !form.nombre || !form.fecha || !form.hora) {
+      setError("Complete número, nombre, fecha y hora de la diligencia.");
+      return;
+    }
+    if (detectarConflicto()) {
+      setError("Ya existe una diligencia con el mismo nombre, fecha y hora. No se permiten duplicados.");
+      return;
+    }
+
+    setOpening(true);
+    try {
+      addHistory(openType, {
+        numero: form.numero,
+        nombre: form.nombre,
+        fechaDiligencia: form.fecha,
+        horaDiligencia: form.hora,
+      } as any);
+
+      const file = TEMPLATE_FILES[openType];
+      window.open(file, "_blank", "noopener,noreferrer");
+
+      setForm({ numero: "", nombre: "", fecha: "", hora: "" });
+      setOpenType(null);
+    } catch (e) {
+      setError("Error al registrar la diligencia.");
+    } finally {
+      setOpening(false);
+    }
   };
 
   return (
@@ -66,7 +119,7 @@ export default function OperationalDashboard() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-action">DEPDICC – Iquitos</p>
               <h1 className="mt-1 text-2xl font-black text-police md:text-3xl">Gestión de Citaciones y Notificaciones</h1>
-              <p className="mt-1 text-sm text-slate-600">Seleccione una plantilla para descargar el documento Word, editarlo y guardarlo en su equipo.</p>
+              <p className="mt-1 text-sm text-slate-600">Seleccione una plantilla para abrir en el navegador y registrar la diligencia.</p>
             </div>
             <div className="flex gap-2">
               <Link to="/historial">
@@ -97,27 +150,110 @@ export default function OperationalDashboard() {
 
         <section className="scroll-mt-28 rounded-lg border bg-white p-5 shadow-sm">
           <h2 className="text-lg font-black text-police">Plantillas oficiales</h2>
-          <p className="mt-1 text-sm text-slate-600">Al hacer clic se descarga el documento Word para editar y guardar desde su equipo.</p>
+          <p className="mt-1 text-sm text-slate-600">Al hacer clic se abre el documento en el navegador para editar y guardar.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {DOCUMENT_CARDS.map((doc) => (
-              <button
-                key={doc.label}
-                onClick={() => abrirPlantilla(doc.file)}
-                className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
-              >
+                <button
+                  key={doc.key}
+                  onClick={() => {
+                    setOpenType(doc.key);
+                    setError(null);
+                  }}
+                  className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
+                >
                 <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-md text-white ${COLOR_MAP[doc.color]}`}>
                   <FileText className="h-5 w-5" />
                 </div>
                 <h3 className="font-black text-slate-900">{doc.label}</h3>
                 <p className="mt-2 text-sm leading-5 text-slate-600">{doc.description}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-extrabold text-action group-hover:gap-2 transition-all">
-                  Descargar plantilla <FilePlus2 className="h-4 w-4" />
+                  Abrir plantilla <FilePlus2 className="h-4 w-4" />
                 </span>
               </button>
             ))}
           </div>
         </section>
       </section>
+
+      <AnimatePresence>
+        {openType && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-black text-slate-900">Registrar diligencia</h3>
+                <button onClick={() => setOpenType(null)} className="text-slate-500 hover:text-slate-800">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="mb-4 text-sm text-slate-600">Complete los datos para abrir la plantilla y registrar la diligencia en la Agenda.</p>
+              {error && (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+              <div className="grid gap-3">
+                <div>
+                  <label className="label">Número</label>
+                  <input
+                    className="field"
+                    value={form.numero}
+                    onChange={(e) => setForm({ ...form, numero: e.target.value })}
+                    placeholder="Ej: 001"
+                  />
+                </div>
+                <div>
+                  <label className="label">Nombre / Citado</label>
+                  <input
+                    className="field"
+                    value={form.nombre}
+                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    placeholder="Ej: JUAN CARLOS PÉREZ"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Fecha</label>
+                    <input
+                      type="date"
+                      className="field"
+                      value={form.fecha}
+                      onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Hora</label>
+                    <input
+                      type="time"
+                      className="field"
+                      value={form.hora}
+                      onChange={(e) => setForm({ ...form, hora: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <Button variant="secondary" className="border border-slate-200" onClick={() => setOpenType(null)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleOpenTemplate} disabled={opening}>
+                  {opening ? "Abriendo..." : "Abrir plantilla y registrar"}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
