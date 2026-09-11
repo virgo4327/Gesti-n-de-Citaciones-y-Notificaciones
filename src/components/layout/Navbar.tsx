@@ -1,7 +1,6 @@
-import { ChevronDown, FilePlus2, Menu, Shield, X } from "lucide-react";
+import { ChevronDown, Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Button } from "../ui/button";
 import { documents } from "../../constants";
 
 export default function Navbar() {
@@ -37,9 +36,6 @@ export default function Navbar() {
           <NavLink to="/agenda" className={({ isActive }) => (isActive ? "text-police" : "hover:text-police")}>Agenda</NavLink>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild className="hidden lg:inline-flex">
-            <a href="/#crear"><FilePlus2 className="h-4 w-4" />Nuevo documento</a>
-          </Button>
           <button className="lg:hidden" onClick={() => setOpen(v => !v)} aria-label="Abrir menú">
             {open ? <X /> : <Menu />}
           </button>
