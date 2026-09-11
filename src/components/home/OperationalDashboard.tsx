@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 
 const TEMPLATE_FILES: Record<string, string> = {
-  a2: "/plantillas/A2 - Citación (víctima, testigo, perito, depositario u otro) caso de flagrancia.docx",
-  a3: "/plantillas/A3 - Citación (víctima, testigo, perito, depositario u otro) - Carpeta Fiscal.docx",
-  a4: "/plantillas/A4 - Notificación - Denunciado - Flagrante Delito.docx",
-  a5: "/plantillas/A5 - Notificación - Denunciado - Carpeta Fiscal.docx",
+  a2: "https://docs.google.com/document/d/18ujh0XUk67mOSGsRgjMh1cCv7d_-Dt9MajdH4pz5H6c/edit?usp=sharing",
+  a3: "https://docs.google.com/document/d/1OZyPGdB5Y_RTw7HzLTlADf3d0cqNF4iOyhW1lvKvbU0/edit?usp=sharing",
+  a4: "https://docs.google.com/document/d/1f-14cUs9rdJkP1gEyQcDvhNm3Bzj0-2xwSrY3IZlHa8/edit?usp=sharing",
+  a5: "https://docs.google.com/document/d/1OVz0yXmbRGb3CIz069BTmJ5SJ8ti430mg7-76DnNxRs/edit?usp=sharing",
 };
 
 const DOCUMENT_CARDS = [
@@ -49,22 +49,8 @@ export default function OperationalDashboard() {
     { label: "Sistema", value: "Operativo" },
   ];
 
-  const abrirPlantilla = async (file: string) => {
-    try {
-      const response = await fetch(file);
-      if (!response.ok) throw new Error("No se pudo descargar la plantilla.");
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.split("/").pop() || "plantilla.docx";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      alert("Error al descargar el documento. Intente nuevamente.");
-    }
+  const abrirPlantilla = (file: string) => {
+    window.open(file, "_blank", "noopener,noreferrer");
   };
 
   return (
