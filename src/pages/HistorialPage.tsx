@@ -91,6 +91,13 @@ export default function HistorialPage() {
     }
   };
 
+  const obtenerFechaHora = (item: any) => {
+    const payload = item.payload || {};
+    const fecha = payload.fechaDiligencia || payload.fecha || "";
+    const hora = payload.horaDiligencia || payload.hora || "";
+    return { fecha, hora };
+  };
+
   return (
     <>
       <Navbar />
@@ -132,20 +139,23 @@ export default function HistorialPage() {
                   <th className="px-4 py-3">N°</th>
                   <th className="px-4 py-3">Documento</th>
                   <th className="px-4 py-3">Nombre / Citado</th>
-                  <th className="px-4 py-3">Fecha Emisión</th>
-                  <th className="px-4 py-3 text-right">Descargas y Acciones</th>
+                  <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3">Hora</th>
+                  <th className="px-4 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {pageItems.map((item) => (
-                  <tr key={item.id} className="border-t hover:bg-slate-50 transition">
-                    <td className="px-4 py-3 font-bold text-police">{item.numero}</td>
-                    <td className="px-4 py-3 font-semibold">{documentLabels[item.type] || item.type.toUpperCase()}</td>
-                    <td className="px-4 py-3">{item.nombre}</td>
-                    <td className="px-4 py-3">{new Date(item.generatedAt).toLocaleDateString("es-PE")}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="inline-flex gap-2">
-                        {["a2", "a3", "a4", "a5"].includes(item.type) && (
+                {pageItems.map((item) => {
+                  const { fecha, hora } = obtenerFechaHora(item);
+                  return (
+                    <tr key={item.id} className="border-t hover:bg-slate-50 transition">
+                      <td className="px-4 py-3 font-bold text-police">{item.numero}</td>
+                      <td className="px-4 py-3 font-semibold">{documentLabels[item.type] || item.type.toUpperCase()}</td>
+                      <td className="px-4 py-3">{item.nombre}</td>
+                      <td className="px-4 py-3">{fecha || "—"}</td>
+                      <td className="px-4 py-3">{hora || "—"}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="inline-flex gap-2">
                           <Button
                             type="button"
                             className="h-8 px-2 text-xs bg-blue-700 hover:bg-blue-800 text-white"
@@ -153,22 +163,22 @@ export default function HistorialPage() {
                           >
                             <Download className="h-3.5 w-3.5" /> PDF
                           </Button>
-                        )}
-                        <Button
-                          type="button"
-                          variant="danger"
-                          className="h-8 w-8 px-0"
-                          onClick={() => deleteHistory(item.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          <Button
+                            type="button"
+                            variant="danger"
+                            className="h-8 w-8 px-0"
+                            onClick={() => deleteHistory(item.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
+                    <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
                       No hay documentos registrados en el historial.
                     </td>
                   </tr>

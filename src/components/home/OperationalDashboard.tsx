@@ -52,7 +52,7 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 export default function OperationalDashboard() {
-  const { history, addHistory } = useDocumentStore();
+  const { history, addHistory, storageError } = useDocumentStore();
   const [openType, setOpenType] = useState<DocumentType | null>(null);
   const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
   const [error, setError] = useState<string | null>(null);
@@ -76,10 +76,12 @@ export default function OperationalDashboard() {
   const handleOpenTemplate = async () => {
     if (!openType) return;
     setError(null);
-    if (!form.numero || !form.nombre || !form.fecha || !form.hora) {
+
+    if (!form.numero.trim() || !form.nombre.trim() || !form.fecha.trim() || !form.hora.trim()) {
       setError("Complete número, nombre, fecha y hora de la diligencia.");
       return;
     }
+
     if (detectarConflicto()) {
       setError("Ya existe una diligencia con el mismo nombre, fecha y hora. No se permiten duplicados.");
       return;
@@ -88,19 +90,18 @@ export default function OperationalDashboard() {
     setOpening(true);
     try {
       addHistory(openType, {
-        numero: form.numero,
-        nombre: form.nombre,
+        numero: form.numero.trim(),
+        nombre: form.nombre.trim(),
         fechaDiligencia: form.fecha,
         horaDiligencia: form.hora,
       } as any);
 
-      const file = TEMPLATE_FILES[openType];
-      window.open(file, "_blank", "noopener,noreferrer");
+      window.open(TEMPLATE_FILES[openType], "_blank", "noopener,noreferrer");
 
       setForm({ numero: "", nombre: "", fecha: "", hora: "" });
       setOpenType(null);
-    } catch (e) {
-      setError("Error al registrar la diligencia.");
+    } catch (e: any) {
+      setError(e?.message || "Error al registrar la diligencia.");
     } finally {
       setOpening(false);
     }
@@ -119,7 +120,7 @@ export default function OperationalDashboard() {
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-action">DEPDICC – Iquitos</p>
               <h1 className="mt-1 text-2xl font-black text-police md:text-3xl">Gestión de Citaciones y Notificaciones</h1>
-              <p className="mt-1 text-sm text-slate-600">Seleccione una plantilla para abrir en el navegador y registrar la diligencia.</p>
+              <p className="mt-1 text-sm text-slate-600">Seleccione una plantilla para registrar y abrir en el navegador.</p>
             </div>
             <div className="flex gap-2">
               <Link to="/historial">
@@ -150,24 +151,24 @@ export default function OperationalDashboard() {
 
         <section className="scroll-mt-28 rounded-lg border bg-white p-5 shadow-sm">
           <h2 className="text-lg font-black text-police">Plantillas oficiales</h2>
-          <p className="mt-1 text-sm text-slate-600">Al hacer clic se abre el documento en el navegador para editar y guardar.</p>
+          <p className="mt-1 text-sm text-slate-600">Al hacer clic se abre el formulario de registro y luego el documento en el navegador.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {DOCUMENT_CARDS.map((doc) => (
-                <button
-                  key={doc.key}
-                  onClick={() => {
-                    setOpenType(doc.key);
-                    setError(null);
-                  }}
-                  className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
-                >
+              <button
+                key={doc.key}
+                onClick={() => {
+                  setOpenType(doc.key);
+                  setError(null);
+                }}
+                className="group rounded-lg border border-slate-200 p-5 text-left transition hover:border-police hover:shadow-md"
+              >
                 <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-md text-white ${COLOR_MAP[doc.color]}`}>
                   <FileText className="h-5 w-5" />
                 </div>
                 <h3 className="font-black text-slate-900">{doc.label}</h3>
                 <p className="mt-2 text-sm leading-5 text-slate-600">{doc.description}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-extrabold text-action group-hover:gap-2 transition-all">
-                  Abrir plantilla <FilePlus2 className="h-4 w-4" />
+                  Registrar y abrir <FilePlus2 className="h-4 w-4" />
                 </span>
               </button>
             ))}
@@ -195,11 +196,17 @@ export default function OperationalDashboard() {
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <p className="mb-4 text-sm text-slate-600">Complete los datos para abrir la plantilla y registrar la diligencia en la Agenda.</p>
+              <p className="mb-4 text-sm text-slate-600">Complete los datos para registrar la diligencia y abrir la plantilla.</p>
               {error && (
                 <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>{error}</span>
+                </div>
+              )}
+              {storageError && (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{storageError}</span>
                 </div>
               )}
               <div className="grid gap-3">
@@ -247,7 +254,7 @@ export default function OperationalDashboard() {
                   Cancelar
                 </Button>
                 <Button onClick={handleOpenTemplate} disabled={opening}>
-                  {opening ? "Abriendo..." : "Abrir plantilla y registrar"}
+                  {opening ? "Abriendo..." : "Registrar y abrir"}
                 </Button>
               </div>
             </motion.div>
