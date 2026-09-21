@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useDocumentStore } from "../../store/documentStore";
+import { normalizarFecha } from "../../lib/schedule";
 import type { DocumentType } from "../../types";
 
 const TEMPLATE_FILES: Record<string, string> = {
@@ -92,8 +93,8 @@ export default function OperationalDashboard() {
       addHistory(openType, {
         numero: form.numero.trim(),
         nombre: form.nombre.trim(),
-        fechaDiligencia: form.fecha,
-        horaDiligencia: form.hora,
+        fechaDiligencia: normalizarFecha(form.fecha),
+        horaDiligencia: form.hora.trim(),
       } as any);
 
       window.open(TEMPLATE_FILES[openType], "_blank", "noopener,noreferrer");
