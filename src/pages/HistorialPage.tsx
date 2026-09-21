@@ -10,7 +10,7 @@ import Sidebar from "../components/layout/Sidebar";
 import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
 import { documentLabels } from "../types";
-import { normalizarFecha, fechaATimestamp, verificarConflictoFechaHora } from "../lib/schedule";
+import { normalizarFecha, verificarConflictoFechaHora } from "../lib/schedule";
 import DocumentPreview from "../components/preview/DocumentPreview";
 
 const PAGE_SIZE = 20;
@@ -33,19 +33,6 @@ export default function HistorialPage() {
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
   const [editError, setEditError] = useState<string | null>(null);
-
-  const obtenerTimestamp = (item: any): number => {
-    const payload = item.payload || {};
-    const fecha = normalizarFecha(payload.fechaDiligencia || payload.fecha || "");
-    const hora = (payload.horaDiligencia || payload.hora || "00:00").trim();
-    const ts = fechaATimestamp(fecha, hora);
-    if (ts > 0) return ts;
-    if (item.generatedAt) {
-      const genTs = new Date(item.generatedAt).getTime();
-      if (!isNaN(genTs) && genTs > 0) return genTs;
-    }
-    return 0;
-  };
 
   const filtered = useMemo(() => {
     return history
