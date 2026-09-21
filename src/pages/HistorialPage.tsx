@@ -20,11 +20,17 @@ export default function HistorialPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
-    return history.filter((item) => {
-      const matchesQuery = `${item.numero} ${item.nombre}`.toLowerCase().includes(query.toLowerCase());
-      const matchesType = typeFilter === "todos" || item.type === typeFilter;
-      return matchesQuery && matchesType;
-    });
+    return history
+      .filter((item) => {
+        const matchesQuery = `${item.numero} ${item.nombre}`.toLowerCase().includes(query.toLowerCase());
+        const matchesType = typeFilter === "todos" || item.type === typeFilter;
+        return matchesQuery && matchesType;
+      })
+      .sort((a, b) => {
+        const tsA = a.generatedAt ? new Date(a.generatedAt).getTime() : 0;
+        const tsB = b.generatedAt ? new Date(b.generatedAt).getTime() : 0;
+        return tsB - tsA; // más reciente primero
+      });
   }, [history, query, typeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));

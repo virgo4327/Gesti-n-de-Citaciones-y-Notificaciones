@@ -24,6 +24,22 @@ export function fechaATimestamp(fecha?: string, hora?: string): number {
 }
 
 /**
+ * Normaliza una fecha al formato DD/MM/YYYY.
+ * Acepta tanto DD/MM/YYYY como YYYY-MM-DD (formato nativo de <input type="date">).
+ */
+export function normalizarFecha(fecha?: string): string {
+  if (!fecha) return "";
+  const f = fecha.trim();
+  if (fechaRegex.test(f)) return f;
+  // Convertir YYYY-MM-DD a DD/MM/YYYY
+  const isoRegex = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+  const match = isoRegex.exec(f);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  return f;
+}
+
+
+/**
  * Determina si una cita ya venció en relación con la fecha y hora actual de la computadora.
  */
 export function esCitaPasada(fecha: string, hora: string): boolean {
@@ -48,20 +64,20 @@ export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: stri
   let nombre = item.nombre || p.nombre || "";
 
   if (type === "a2" || type === "a3") {
-    fecha = p.fechaDiligencia || "";
+    fecha = normalizarFecha(p.fechaDiligencia || "");
     hora = p.horaDiligencia || "";
     delito = p.modalidadDelito || "";
   } else if (type === "a4" || type === "a5") {
-    fecha = p.fechaDiligencia || "";
+    fecha = normalizarFecha(p.fechaDiligencia || "");
     hora = p.horaDiligencia || "";
     delito = p.delito || "";
   } else if (type === "investigado" || type === "testigo") {
-    fecha = p.fechaDiligencia || "";
+    fecha = normalizarFecha(p.fechaDiligencia || "");
     hora = p.hora || "";
     delito = p.delito || "";
   } else if (type === "notificacion") {
     if (p.citados && p.citados.length > 0) {
-      fecha = p.citados[0].fecha || "";
+      fecha = normalizarFecha(p.citados[0].fecha || "");
       hora = p.citados[0].hora || "";
     }
     delito = p.delito || "";

@@ -26,7 +26,7 @@ export const documents: DocConfigItem[] = [
   {
     key: "a2",
     label: "A2 - Citación Flagrancia",
-    href: "/editor/a2",
+    href: "/",
     icon: FileText,
     color: "blue",
     badge: "Flagrancia",
@@ -35,7 +35,7 @@ export const documents: DocConfigItem[] = [
   {
     key: "a3",
     label: "A3 - Citación Carpeta Fiscal",
-    href: "/editor/a3",
+    href: "/",
     icon: Users,
     color: "emerald",
     badge: "Carpeta Fiscal",
@@ -44,7 +44,7 @@ export const documents: DocConfigItem[] = [
   {
     key: "a4",
     label: "A4 - Notif. Flagrante Delito",
-    href: "/editor/a4",
+    href: "/",
     icon: Bell,
     color: "amber",
     badge: "Flagrante Delito",
@@ -53,7 +53,7 @@ export const documents: DocConfigItem[] = [
   {
     key: "a5",
     label: "A5 - Notif. Carpeta Fiscal",
-    href: "/editor/a5",
+    href: "/",
     icon: ShieldAlert,
     color: "rose",
     badge: "Carpeta Fiscal",
