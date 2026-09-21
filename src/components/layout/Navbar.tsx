@@ -1,7 +1,6 @@
-import { ChevronDown, Menu, Shield, X } from "lucide-react";
+import { Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { documents } from "../../constants";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -22,16 +21,6 @@ export default function Navbar() {
         </Link>
         <div className="hidden items-center gap-7 text-sm font-semibold text-slate-700 lg:flex">
           <NavLink to="/" className={({ isActive }) => (isActive ? "text-police" : "hover:text-police")}>Inicio</NavLink>
-          <div className="group relative py-6">
-            <button className="flex items-center gap-1 hover:text-police">
-              Documentos <ChevronDown className="h-4 w-4" />
-            </button>
-            <div className="invisible absolute left-0 top-16 w-64 rounded-md border bg-white p-2 opacity-0 shadow-soft transition group-hover:visible group-hover:opacity-100">
-              {documents.map(({ label, href }) => (
-                <Link key={href} to={href} className="block rounded px-3 py-2 hover:bg-slate-100">{label}</Link>
-              ))}
-            </div>
-          </div>
           <NavLink to="/historial" className={({ isActive }) => (isActive ? "text-police" : "hover:text-police")}>Historial</NavLink>
           <NavLink to="/agenda" className={({ isActive }) => (isActive ? "text-police" : "hover:text-police")}>Agenda</NavLink>
         </div>
@@ -43,7 +32,7 @@ export default function Navbar() {
       </nav>
       {open && (
         <div className="border-t bg-white px-4 py-3 lg:hidden">
-          {[["Inicio", "/"], ...documents.map(d => [d.label, d.href] as const), ["Historial", "/historial"], ["Agenda", "/agenda"]].map(([label, href]) => (
+          {[["Inicio", "/"], ["Historial", "/historial"], ["Agenda", "/agenda"]].map(([label, href]) => (
             <Link key={href} to={href} onClick={() => setOpen(false)} className="block rounded-md px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100">
               {label}
             </Link>

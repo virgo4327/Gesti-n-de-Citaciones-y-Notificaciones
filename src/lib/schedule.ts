@@ -180,7 +180,10 @@ export function agruparPorFecha(items: AgendaItem[]): Map<string, AgendaItem[]> 
       if (a.timestamp === 0 && b.timestamp === 0) return 0;
       if (a.timestamp === 0) return 1;
       if (b.timestamp === 0) return -1;
-      return a.timestamp - b.timestamp;
+      if (a.hora !== b.hora) return a.hora.localeCompare(b.hora);
+      const numA = parseInt(a.numero || "0", 10);
+      const numB = parseInt(b.numero || "0", 10);
+      return numA - numB;
     });
   }
   return mapa;

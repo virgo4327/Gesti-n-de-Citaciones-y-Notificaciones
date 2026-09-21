@@ -66,7 +66,6 @@ export const documentTypes: DocumentType[] = ["a2", "a3", "a4", "a5"];
 export const moduleData = documents.filter((d): d is Extract<DocConfigItem, { key: DocumentType }> => d.key !== "historial" && d.key !== "agenda");
 
 export const sidebarItems: DocConfigItem[] = [
-  ...documents,
   { key: "agenda", label: "Agenda y Programación", href: "/agenda", icon: CalendarDays, color: "slate" },
   { key: "historial", label: "Historial de Emisiones", href: "/historial", icon: ClipboardList, color: "slate" },
 ];

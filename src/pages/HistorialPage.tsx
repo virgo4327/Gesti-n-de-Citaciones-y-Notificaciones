@@ -27,9 +27,9 @@ export default function HistorialPage() {
         return matchesQuery && matchesType;
       })
       .sort((a, b) => {
-        const tsA = a.generatedAt ? new Date(a.generatedAt).getTime() : 0;
-        const tsB = b.generatedAt ? new Date(b.generatedAt).getTime() : 0;
-        return tsB - tsA; // más reciente primero
+        const numA = parseInt(a.numero || "0", 10);
+        const numB = parseInt(b.numero || "0", 10);
+        return numA - numB;
       });
   }, [history, query, typeFilter]);
 
