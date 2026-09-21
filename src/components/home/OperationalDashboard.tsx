@@ -66,11 +66,14 @@ export default function OperationalDashboard() {
 
   const detectarConflicto = (): boolean => {
     if (!form.nombre || !form.fecha || !form.hora) return false;
+    const fechaForm = normalizarFecha(form.fecha);
     return history.some((item) => {
       if (item.type !== (openType ?? "a2")) return false;
-      const itemFecha = new Date((item.payload as any).fechaDiligencia || item.generatedAt).toISOString().slice(0, 10);
+      const itemFecha = normalizarFecha((item.payload as any).fechaDiligencia || item.generatedAt);
+      const itemFechaISO = new Date(itemFecha).toISOString().slice(0, 10);
+      const formFechaISO = new Date(fechaForm).toISOString().slice(0, 10);
       const itemHora = (item.payload as any).horaDiligencia || (item.payload as any).hora || "";
-      return item.nombre === form.nombre && itemFecha === form.fecha && itemHora === form.hora;
+      return item.nombre === form.nombre && itemFechaISO === formFechaISO && itemHora === form.hora;
     });
   };
 
