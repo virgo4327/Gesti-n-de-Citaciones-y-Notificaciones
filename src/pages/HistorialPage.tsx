@@ -55,26 +55,11 @@ export default function HistorialPage() {
         return matchesQuery && matchesType;
       })
       .sort((a, b) => {
-        const tsA = obtenerTimestamp(a);
-        const tsB = obtenerTimestamp(b);
-        if (sortOrder === "cronologico-desc") {
-          if (tsB !== tsA) return tsB - tsA;
-          const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
-          const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
-          return numB - numA;
-        }
-        if (sortOrder === "cronologico-asc") {
-          if (tsA !== tsB) return tsA - tsB;
-          const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
-          const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
-          return numA - numB;
-        }
-        // Por número
-        const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
-        const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
+        const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
+        const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
         return numA - numB;
       });
-  }, [history, query, typeFilter, sortOrder]);
+  }, [history, query, typeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);

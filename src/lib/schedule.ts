@@ -5,7 +5,8 @@ const horaRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 export function esFechaValida(fecha?: string): boolean {
   if (!fecha) return false;
-  return fechaRegex.test(fecha.trim());
+  const f = fecha.trim();
+  return fechaRegex.test(f) || /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(f);
 }
 
 export function esHoraValida(hora?: string): boolean {
@@ -18,9 +19,29 @@ export function fechaATimestamp(fecha?: string, hora?: string): number {
   const f = fecha.trim();
   const h = hora.trim();
   if (!esFechaValida(f) || !esHoraValida(h)) return 0;
-  const [dd, mm, aaaa] = f.split("/").map(Number);
+
   const [hh, min] = h.split(":").map(Number);
-  return new Date(aaaa, mm - 1, dd, hh, min).getTime();
+
+  // Formato DD/MM/YYYY
+  const ddMMyyyy = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/(\d{4})$/;
+  const matchDDMM = ddMMyyyy.exec(f);
+  if (matchDDMM) {
+    const dd = Number(matchDDMM[1]);
+    const mm = Number(matchDDMM[2]);
+    const aaaa = Number(matchDDMM[3]);
+    return new Date(aaaa, mm - 1, dd, hh, min).getTime();
+  }
+
+  // Formato YYYY-MM-DD
+  const isoMatch = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(f);
+  if (isoMatch) {
+    const aaaa = Number(isoMatch[1]);
+    const mm = Number(isoMatch[2]);
+    const dd = Number(isoMatch[3]);
+    return new Date(aaaa, mm - 1, dd, hh, min).getTime();
+  }
+
+  return 0;
 }
 
 /**
@@ -208,18 +229,19 @@ export function construirAgenda(history: HistoryItem[]): AgendaItem[] {
 export function agruparPorFecha(items: AgendaItem[]): Map<string, AgendaItem[]> {
   const mapa = new Map<string, AgendaItem[]>();
   for (const item of items) {
-    const existente = mapa.get(item.fecha) ?? [];
-    existente.push(item);
-    mapa.set(item.fecha, existente);
+    const fechaNorm = normalizarFecha(item.fecha);
+    const existente = mapa.get(fechaNorm) ?? [];
+    existente.push({ ...item, fecha: fechaNorm });
+    mapa.set(fechaNorm, existente);
   }
   for (const [, grupo] of mapa) {
     grupo.sort((a, b) => {
-      if (a.timestamp > 0 && b.timestamp > 0 && a.timestamp !== b.timestamp) {
-        return a.timestamp - b.timestamp;
-      }
-      const horaA = a.hora || "";
-      const horaB = b.hora || "";
-      if (horaA !== horaB) return horaA.localeCompare(horaB);
+      // 1. Comparación cronológica estricta por hora (ej. 08:30 < 09:00 < 10:00 < 16:00)
+      const hA = (a.hora || "").trim().padStart(5, "0");
+      const hB = (b.hora || "").trim().padStart(5, "0");
+      if (hA !== hB) return hA.localeCompare(hB);
+
+      // 2. Desempate por número correlativo
       const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
       const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
       return numA - numB;
@@ -229,8 +251,17 @@ export function agruparPorFecha(items: AgendaItem[]): Map<string, AgendaItem[]> 
 }
 
 export function formatearFechaDisplay(fecha: string): string {
-  if (!esFechaValida(fecha)) return fecha;
-  const [dd, mm, aaaa] = fecha.split("/").map(Number);
-  const date = new Date(aaaa, mm - 1, dd);
-  return date.toLocaleDateString("es-PE", { day: "2-digit", month: "long", year: "numeric" });
+  if (!fecha) return "";
+  const f = fecha.trim();
+  const isoMatch = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(f);
+  if (isoMatch) {
+    const date = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+    return date.toLocaleDateString("es-PE", { day: "2-digit", month: "long", year: "numeric" });
+  }
+  if (fechaRegex.test(f)) {
+    const [dd, mm, aaaa] = f.split("/").map(Number);
+    const date = new Date(aaaa, mm - 1, dd);
+    return date.toLocaleDateString("es-PE", { day: "2-digit", month: "long", year: "numeric" });
+  }
+  return f;
 }

@@ -37,7 +37,7 @@ export const documents: DocConfigItem[] = [
     label: "A3 - Citación Carpeta Fiscal",
     href: "/?doc=a3",
     icon: Users,
-    color: "emerald",
+    color: "indigo",
     badge: "Carpeta Fiscal",
     description: "Citación a víctima, testigo, perito, depositario u otro por Carpeta Fiscal.",
   },
