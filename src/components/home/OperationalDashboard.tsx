@@ -1,10 +1,10 @@
-import { FilePlus2, History, ShieldCheck, FileText, CalendarDays, AlertTriangle, X } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { FilePlus2, History, ShieldCheck, FileText, CalendarDays, AlertTriangle, X, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useDocumentStore } from "../../store/documentStore";
-import { normalizarFecha } from "../../lib/schedule";
+import { normalizarFecha, verificarConflictoFechaHora } from "../../lib/schedule";
 import type { DocumentType } from "../../types";
 
 const TEMPLATE_FILES: Record<string, string> = {
@@ -54,27 +54,34 @@ const COLOR_MAP: Record<string, string> = {
 
 export default function OperationalDashboard() {
   const { history, addHistory, storageError } = useDocumentStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [openType, setOpenType] = useState<DocumentType | null>(null);
   const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
   const [error, setError] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
+
+  // Escuchar parámetros de búsqueda para abrir el formulario desde el panel izquierdo (Sidebar)
+  useEffect(() => {
+    const doc = searchParams.get("doc");
+    if (doc && ["a2", "a3", "a4", "a5"].includes(doc)) {
+      setOpenType(doc as DocumentType);
+      setError(null);
+    }
+  }, [searchParams]);
 
   const stats = [
     { label: "Sistema", value: "Operativo" },
     { label: "Registrados", value: String(history.length) },
   ];
 
-  const detectarConflicto = (): boolean => {
-    if (!form.nombre || !form.fecha || !form.hora) return false;
-    const fechaForm = normalizarFecha(form.fecha);
-    return history.some((item) => {
-      if (item.type !== (openType ?? "a2")) return false;
-      const itemFecha = normalizarFecha((item.payload as any).fechaDiligencia || item.generatedAt);
-      const itemFechaISO = new Date(itemFecha).toISOString().slice(0, 10);
-      const formFechaISO = new Date(fechaForm).toISOString().slice(0, 10);
-      const itemHora = (item.payload as any).horaDiligencia || (item.payload as any).hora || "";
-      return item.nombre === form.nombre && itemFechaISO === formFechaISO && itemHora === form.hora;
-    });
+  const handleCloseModal = () => {
+    setOpenType(null);
+    setError(null);
+    if (searchParams.get("doc")) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("doc");
+      setSearchParams(nextParams, { replace: true });
+    }
   };
 
   const handleOpenTemplate = async () => {
@@ -86,8 +93,10 @@ export default function OperationalDashboard() {
       return;
     }
 
-    if (detectarConflicto()) {
-      setError("Ya existe una diligencia con el mismo nombre, fecha y hora. No se permiten duplicados.");
+    // Validación estricta de duplicados por fecha y hora
+    const conflicto = verificarConflictoFechaHora(form.fecha, form.hora, history);
+    if (conflicto.existe) {
+      setError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora. No se permiten duplicados.");
       return;
     }
 
@@ -103,7 +112,7 @@ export default function OperationalDashboard() {
       window.open(TEMPLATE_FILES[openType], "_blank", "noopener,noreferrer");
 
       setForm({ numero: "", nombre: "", fecha: "", hora: "" });
-      setOpenType(null);
+      handleCloseModal();
     } catch (e: any) {
       setError(e?.message || "Error al registrar la diligencia.");
     } finally {
@@ -112,7 +121,7 @@ export default function OperationalDashboard() {
   };
 
   return (
-    <main className="bg-slate-100 px-4 py-5 md:px-8 lg:px-10">
+    <section className="bg-slate-100 px-4 py-5 md:px-8 lg:px-10 min-h-[calc(100vh-70px)]">
       <section className="mx-auto max-w-6xl space-y-4">
         <motion.div
           className="rounded-lg border bg-white p-5 shadow-sm"
@@ -195,8 +204,8 @@ export default function OperationalDashboard() {
               exit={{ y: 20, opacity: 0 }}
             >
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-black text-slate-900">Registrar diligencia</h3>
-                <button onClick={() => setOpenType(null)} className="text-slate-500 hover:text-slate-800">
+                <h3 className="text-lg font-black text-slate-900">Registrar diligencia y abrir plantilla</h3>
+                <button onClick={handleCloseModal} className="text-slate-500 hover:text-slate-800">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -253,18 +262,27 @@ export default function OperationalDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="mt-5 flex justify-end gap-2">
-                <Button variant="secondary" className="border border-slate-200" onClick={() => setOpenType(null)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleOpenTemplate} disabled={opening}>
-                  {opening ? "Abriendo..." : "Registrar y abrir"}
-                </Button>
+              <div className="mt-5 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-police hover:underline"
+                  onClick={() => window.open(TEMPLATE_FILES[openType], "_blank", "noopener,noreferrer")}
+                >
+                  Abrir plantilla directa <ExternalLink className="h-3 w-3" />
+                </button>
+                <div className="flex gap-2">
+                  <Button variant="secondary" className="border border-slate-200" onClick={handleCloseModal}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleOpenTemplate} disabled={opening}>
+                    {opening ? "Abriendo..." : "Registrar y abrir"}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </main>
+    </section>
   );
 }

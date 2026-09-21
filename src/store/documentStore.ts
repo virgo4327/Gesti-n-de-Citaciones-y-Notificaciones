@@ -75,6 +75,16 @@ type Store = {
   storageError: string | null;
   saveDraft: (type: DocumentType, payload: DocumentPayload) => void;
   addHistory: (type: DocumentType, payload: DocumentPayload) => HistoryItem;
+  updateHistory: (
+    id: string,
+    updates: {
+      numero?: string;
+      nombre?: string;
+      fechaDiligencia?: string;
+      horaDiligencia?: string;
+      delito?: string;
+    }
+  ) => void;
   deleteHistory: (id: string) => void;
   clearDraft: (type: DocumentType) => void;
   clearStorageError: () => void;
@@ -100,6 +110,39 @@ export const useDocumentStore = create<Store>()(
         set((state) => ({ history: [item, ...state.history] }));
         return item;
       },
+      updateHistory: (id, updates) =>
+        set((state) => ({
+          history: state.history.map((item) => {
+            if (item.id !== id) return item;
+            const p = (item.payload || {}) as any;
+            const newNumero = updates.numero !== undefined ? updates.numero : item.numero;
+            const newNombre = updates.nombre !== undefined ? updates.nombre : item.nombre;
+            const newFecha =
+              updates.fechaDiligencia !== undefined
+                ? updates.fechaDiligencia
+                : p.fechaDiligencia || p.fecha || "";
+            const newHora =
+              updates.horaDiligencia !== undefined
+                ? updates.horaDiligencia
+                : p.horaDiligencia || p.hora || "";
+            const newPayload = {
+              ...p,
+              numero: newNumero,
+              nombre: newNombre,
+              fechaDiligencia: newFecha,
+              horaDiligencia: newHora,
+              fecha: newFecha,
+              hora: newHora,
+              delito: updates.delito !== undefined ? updates.delito : p.delito || p.modalidadDelito || "",
+            };
+            return {
+              ...item,
+              numero: newNumero,
+              nombre: newNombre,
+              payload: newPayload,
+            };
+          }),
+        })),
       deleteHistory: (id) =>
         set((state) => ({ history: state.history.filter((item) => item.id !== id) })),
       clearDraft: (type) =>

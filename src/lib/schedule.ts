@@ -124,6 +124,43 @@ export function detectarConflictos(
   return conflictos;
 }
 
+export function verificarConflictoFechaHora(
+  fechaInput: string,
+  horaInput: string,
+  history: HistoryItem[],
+  excludeId?: string
+): { existe: boolean; mensaje?: string; conflicto?: HistoryItem } {
+  if (!fechaInput?.trim() || !horaInput?.trim()) return { existe: false };
+
+  const fechaNorm = normalizarFecha(fechaInput.trim());
+  const horaNorm = horaInput.trim();
+  const tsNuevo = fechaATimestamp(fechaNorm, horaNorm);
+
+  for (const item of history) {
+    if (excludeId && item.id === excludeId) continue;
+
+    const { fecha: itemFecha, hora: itemHora } = extraerFechaHora(item);
+    if (!itemFecha || !itemHora) continue;
+
+    const itemFechaNorm = normalizarFecha(itemFecha);
+    const itemHoraTrim = itemHora.trim();
+    const tsItem = fechaATimestamp(itemFechaNorm, itemHoraTrim);
+
+    const coincideTs = tsNuevo > 0 && tsItem > 0 && tsNuevo === tsItem;
+    const coincideTexto = fechaNorm === itemFechaNorm && horaNorm === itemHoraTrim;
+
+    if (coincideTs || coincideTexto) {
+      return {
+        existe: true,
+        conflicto: item,
+        mensaje: `Ya existe una diligencia programada para el día ${fechaNorm} a las ${horaNorm} (Doc. N° ${item.numero || "S/N"} - ${item.nombre || "Sin nombre"}). No se permite registrar dos diligencias en la misma fecha y hora.`,
+      };
+    }
+  }
+
+  return { existe: false };
+}
+
 export type AgendaItem = {
   id: string;
   type: DocumentType;
@@ -177,11 +214,14 @@ export function agruparPorFecha(items: AgendaItem[]): Map<string, AgendaItem[]> 
   }
   for (const [, grupo] of mapa) {
     grupo.sort((a, b) => {
+      if (a.timestamp > 0 && b.timestamp > 0 && a.timestamp !== b.timestamp) {
+        return a.timestamp - b.timestamp;
+      }
       const horaA = a.hora || "";
       const horaB = b.hora || "";
       if (horaA !== horaB) return horaA.localeCompare(horaB);
-      const numA = parseInt(a.numero || "0", 10);
-      const numB = parseInt(b.numero || "0", 10);
+      const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
+      const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
       return numA - numB;
     });
   }
