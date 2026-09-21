@@ -66,15 +66,7 @@ export default function AgendaPage() {
 
   const fechas = useMemo(() => {
     const keys = Array.from(agrupada.keys());
-    keys.sort((a, b) => {
-      const itemA = agrupada.get(a)?.[0];
-      const itemB = agrupada.get(b)?.[0];
-      if (!itemA || !itemB) return 0;
-      if (itemA.timestamp === 0 && itemB.timestamp === 0) return a.localeCompare(b);
-      if (itemA.timestamp === 0) return 1;
-      if (itemB.timestamp === 0) return -1;
-      return itemA.timestamp - itemB.timestamp;
-    });
+    keys.sort((a, b) => a.localeCompare(b));
     return keys;
   }, [agrupada]);
 

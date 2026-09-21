@@ -177,10 +177,9 @@ export function agruparPorFecha(items: AgendaItem[]): Map<string, AgendaItem[]> 
   }
   for (const [, grupo] of mapa) {
     grupo.sort((a, b) => {
-      if (a.timestamp === 0 && b.timestamp === 0) return 0;
-      if (a.timestamp === 0) return 1;
-      if (b.timestamp === 0) return -1;
-      if (a.hora !== b.hora) return a.hora.localeCompare(b.hora);
+      const horaA = a.hora || "";
+      const horaB = b.hora || "";
+      if (horaA !== horaB) return horaA.localeCompare(horaB);
       const numA = parseInt(a.numero || "0", 10);
       const numB = parseInt(b.numero || "0", 10);
       return numA - numB;

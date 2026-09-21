@@ -27,8 +27,8 @@ export default function HistorialPage() {
         return matchesQuery && matchesType;
       })
       .sort((a, b) => {
-        const numA = parseInt(a.numero || "0", 10);
-        const numB = parseInt(b.numero || "0", 10);
+        const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
+        const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
         return numA - numB;
       });
   }, [history, query, typeFilter]);
