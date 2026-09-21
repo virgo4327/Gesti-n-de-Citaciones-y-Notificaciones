@@ -28,7 +28,6 @@ import {
   construirAgenda,
   agruparPorFecha,
   formatearFechaDisplay,
-  fechaATimestamp,
   normalizarFecha,
   verificarConflictoFechaHora,
 } from "../lib/schedule";
@@ -91,14 +90,7 @@ export default function AgendaPage() {
   // Orden cronológico estricto de las fechas de agenda (de más próxima a futura)
   const fechas = useMemo(() => {
     const keys = Array.from(agrupada.keys());
-    keys.sort((a, b) => {
-      const tsA = fechaATimestamp(normalizarFecha(a), "00:00");
-      const tsB = fechaATimestamp(normalizarFecha(b), "00:00");
-      if (tsA === 0 && tsB === 0) return a.localeCompare(b);
-      if (tsA === 0) return 1;
-      if (tsB === 0) return -1;
-      return tsA - tsB;
-    });
+    keys.sort((a, b) => a.localeCompare(b));
     return keys;
   }, [agrupada]);
 

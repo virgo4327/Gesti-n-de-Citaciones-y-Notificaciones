@@ -236,12 +236,9 @@ export function agruparPorFecha(items: AgendaItem[]): Map<string, AgendaItem[]> 
   }
   for (const [, grupo] of mapa) {
     grupo.sort((a, b) => {
-      // 1. Comparación cronológica estricta por hora (ej. 08:30 < 09:00 < 10:00 < 16:00)
-      const hA = (a.hora || "").trim().padStart(5, "0");
-      const hB = (b.hora || "").trim().padStart(5, "0");
-      if (hA !== hB) return hA.localeCompare(hB);
-
-      // 2. Desempate por número correlativo
+      const horaA = (a.hora || "").trim().padStart(5, "0");
+      const horaB = (b.hora || "").trim().padStart(5, "0");
+      if (horaA !== horaB) return horaA.localeCompare(horaB);
       const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
       const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10) || 0;
       return numA - numB;
