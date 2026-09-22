@@ -10,7 +10,7 @@ import Sidebar from "../components/layout/Sidebar";
 import { Button } from "../components/ui/button";
 import { useDocumentStore } from "../store/documentStore";
 import { documentLabels } from "../types";
-import { normalizarFecha, verificarConflictoFechaHora } from "../lib/schedule";
+import { normalizarFecha, verificarConflictoFechaHora, documentCategory } from "../lib/schedule";
 import DocumentPreview from "../components/preview/DocumentPreview";
 
 const PAGE_SIZE = 20;
@@ -208,6 +208,7 @@ export default function HistorialPage() {
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-police text-white">
                 <tr>
+                  <th className="px-4 py-3">Categoría</th>
                   <th className="px-4 py-3">N°</th>
                   <th className="px-4 py-3">Documento</th>
                   <th className="px-4 py-3">Nombre / Citado</th>
@@ -219,8 +220,10 @@ export default function HistorialPage() {
               <tbody>
                 {pageItems.map((item) => {
                   const { fecha, hora } = obtenerFechaHora(item);
+                  const categoria = documentCategory[item.type] || "—";
                   return (
                     <tr key={item.id} className="border-t hover:bg-slate-50 transition">
+                      <td className="px-4 py-3 font-semibold text-police">{categoria}</td>
                       <td className="px-4 py-3 font-bold text-police">{item.numero}</td>
                       <td className="px-4 py-3 font-semibold">{documentLabels[item.type] || item.type.toUpperCase()}</td>
                       <td className="px-4 py-3">{item.nombre}</td>
@@ -259,7 +262,7 @@ export default function HistorialPage() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
+                    <td colSpan={7} className="px-4 py-10 text-center text-slate-500">
                       No hay documentos registrados en el historial.
                     </td>
                   </tr>

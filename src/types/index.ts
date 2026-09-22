@@ -157,3 +157,13 @@ export const documentLabels: Record<DocumentType, string> = {
   testigo: "Citación Testigo (Anterior)",
   notificacion: "Notificación Policial (Anterior)",
 };
+
+export const documentCategory: Record<DocumentType, "Citación" | "Notificación"> = {
+  a2: "Citación",
+  a3: "Citación",
+  a4: "Notificación",
+  a5: "Notificación",
+  investigado: "Citación",
+  testigo: "Citación",
+  notificacion: "Notificación",
+};

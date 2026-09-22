@@ -30,6 +30,7 @@ import {
   formatearFechaDisplay,
   normalizarFecha,
   verificarConflictoFechaHora,
+  documentCategory,
 } from "../lib/schedule";
 import { generarWord } from "../lib/docxGenerator";
 
@@ -350,6 +351,7 @@ export default function AgendaPage() {
                         <table className="w-full text-left text-sm min-w-[700px]">
                           <thead className="bg-slate-100 text-xs uppercase text-slate-600">
                             <tr>
+                              <th className="px-4 py-2.5">Categoría</th>
                               <th className="px-4 py-2.5">Hora</th>
                               <th className="px-4 py-2.5">Estado</th>
                               <th className="px-4 py-2.5">Tipo</th>
@@ -365,6 +367,7 @@ export default function AgendaPage() {
                                 key={`${item.id}-${idx}`}
                                 className={`border-t transition hover:bg-slate-50 ${item.esPasada ? "bg-slate-50/60 opacity-85" : ""}`}
                               >
+                                <td className="px-4 py-2.5 font-semibold text-police">{documentCategory[item.type] || "—"}</td>
                                 <td className="px-4 py-2.5">
                                   <span className="inline-flex items-center gap-1 font-bold text-slate-800">
                                     <Clock className="h-3.5 w-3.5 text-police" /> {item.hora || "Sin hora"}

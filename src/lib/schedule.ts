@@ -262,3 +262,5 @@ export function formatearFechaDisplay(fecha: string): string {
   }
   return f;
 }
+
+export { documentCategory } from "../types";
