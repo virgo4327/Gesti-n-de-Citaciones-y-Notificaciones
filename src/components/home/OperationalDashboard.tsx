@@ -47,7 +47,7 @@ const DOCUMENT_CARDS = [
 
 const COLOR_MAP: Record<string, string> = {
   blue: "bg-blue-600",
-  indigo: "bg-indigo-600",
+  emerald: "bg-emerald-600",
   amber: "bg-amber-600",
   rose: "bg-rose-600",
 };
