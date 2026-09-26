@@ -75,7 +75,7 @@ export type Conflicto = {
   minutosDiferencia?: number;
 };
 
-export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: string; delito: string; nombre: string } {
+export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: string; delito: string; nombre: string; cf: string } {
   const p = item.payload as any;
   const type = item.type;
 
@@ -83,6 +83,7 @@ export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: stri
   let hora = "";
   let delito = "";
   let nombre = item.nombre || p.nombre || "";
+  let cf = p.cf || "";
 
   if (type === "a2" || type === "a3") {
     fecha = normalizarFecha(p.fechaDiligencia || "");
@@ -104,7 +105,7 @@ export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: stri
     delito = p.delito || "";
   }
 
-  return { fecha, hora, delito, nombre };
+  return { fecha, hora, delito, nombre, cf };
 }
 
 export function detectarConflictos(
@@ -190,6 +191,7 @@ export type AgendaItem = {
   fecha: string;
   hora: string;
   delito: string;
+  cf: string;
   timestamp: number;
   esPasada: boolean;
   esCitado?: boolean;
@@ -200,7 +202,7 @@ export function construirAgenda(history: HistoryItem[]): AgendaItem[] {
   const now = Date.now();
 
   for (const item of history) {
-    const { fecha, hora, delito, nombre } = extraerFechaHora(item);
+    const { fecha, hora, delito, nombre, cf } = extraerFechaHora(item);
 
     if (fecha && hora) {
       const ts = fechaATimestamp(fecha, hora);
@@ -212,6 +214,7 @@ export function construirAgenda(history: HistoryItem[]): AgendaItem[] {
         fecha,
         hora,
         delito,
+        cf,
         timestamp: ts,
         esPasada: ts > 0 ? ts < now : false,
       });

@@ -64,7 +64,7 @@ export default function AgendaPage() {
 
   // Estado para modal de edición
   const [editingItem, setEditingItem] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
+  const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
   const [editError, setEditError] = useState<string | null>(null);
 
   // Construir agenda completa
@@ -117,6 +117,7 @@ export default function AgendaPage() {
       nombre: item.nombre || payload.nombre || "",
       fecha: fechaVal,
       hora: payload.horaDiligencia || payload.hora || "",
+      cf: payload.cf || "",
     });
     setEditError(null);
     setEditingItem(item);
@@ -126,23 +127,24 @@ export default function AgendaPage() {
     if (!editingItem) return;
     setEditError(null);
 
-    if (!editForm.numero.trim() || !editForm.nombre.trim() || !editForm.fecha.trim() || !editForm.hora.trim()) {
-      setEditError("Complete número, nombre, fecha y hora de la diligencia.");
-      return;
-    }
+      if (!editForm.numero.trim() || !editForm.nombre.trim() || !editForm.fecha.trim() || !editForm.hora.trim()) {
+        setEditError("Complete número, nombre, fecha y hora de la diligencia.");
+        return;
+      }
 
-    const conflicto = verificarConflictoFechaHora(editForm.fecha, editForm.hora, history, editingItem.id);
-    if (conflicto.existe) {
-      setEditError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.");
-      return;
-    }
+      const conflicto = verificarConflictoFechaHora(editForm.fecha, editForm.hora, history, editingItem.id);
+      if (conflicto.existe) {
+        setEditError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.");
+        return;
+      }
 
-    updateHistory(editingItem.id, {
-      numero: editForm.numero.trim(),
-      nombre: editForm.nombre.trim(),
-      fechaDiligencia: normalizarFecha(editForm.fecha),
-      horaDiligencia: editForm.hora.trim(),
-    });
+      updateHistory(editingItem.id, {
+        numero: editForm.numero.trim(),
+        nombre: editForm.nombre.trim(),
+        fechaDiligencia: normalizarFecha(editForm.fecha),
+        horaDiligencia: editForm.hora.trim(),
+        cf: editForm.cf.trim(),
+      } as any);
 
     setEditingItem(null);
   };
@@ -399,7 +401,7 @@ export default function AgendaPage() {
                                 </td>
                                 <td className="px-4 py-2.5 font-bold text-police">{item.numero}</td>
                                 <td className="px-4 py-2.5 font-semibold text-slate-900">{item.nombre}</td>
-                                <td className="px-4 py-2.5 text-slate-600 text-xs">{(item as any).cf || "—"}</td>
+                                <td className="px-4 py-2.5 text-slate-600 text-xs">{item.cf || "—"}</td>
                                 <td className="px-4 py-2.5 text-right">
                                   <div className="inline-flex items-center gap-1">
                                     <Button
@@ -516,6 +518,15 @@ export default function AgendaPage() {
                           onChange={(e) => setEditForm({ ...editForm, hora: e.target.value })}
                         />
                       </div>
+                    </div>
+                    <div>
+                      <label className="label">C.F.</label>
+                      <input
+                        className="field"
+                        value={editForm.cf}
+                        onChange={(e) => setEditForm({ ...editForm, cf: e.target.value })}
+                        placeholder="Ej: Carpeta Fiscal N° 123-2025"
+                      />
                     </div>
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-2">
