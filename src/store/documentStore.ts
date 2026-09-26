@@ -83,6 +83,7 @@ type Store = {
       fechaDiligencia?: string;
       horaDiligencia?: string;
       delito?: string;
+      cf?: string;
     }
   ) => void;
   deleteHistory: (id: string) => void;
@@ -129,6 +130,7 @@ export const useDocumentStore = create<Store>()(
               ...p,
               numero: newNumero,
               nombre: newNombre,
+              cf: updates.cf !== undefined ? updates.cf : p.cf || "",
               fechaDiligencia: newFecha,
               horaDiligencia: newHora,
               fecha: newFecha,
@@ -139,6 +141,7 @@ export const useDocumentStore = create<Store>()(
               ...item,
               numero: newNumero,
               nombre: newNombre,
+              cf: updates.cf !== undefined ? updates.cf : (item as any).cf || p.cf || "",
               payload: newPayload,
             };
           }),

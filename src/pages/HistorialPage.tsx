@@ -31,7 +31,7 @@ export default function HistorialPage() {
 
   // Estado para modal de edición
   const [editingItem, setEditingItem] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
+  const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
   const [editError, setEditError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
@@ -124,6 +124,7 @@ export default function HistorialPage() {
       nombre: item.nombre || payload.nombre || "",
       fecha: fechaVal,
       hora: payload.horaDiligencia || payload.hora || "",
+      cf: item.cf || payload.cf || "",
     });
     setEditError(null);
     setEditingItem(item);
@@ -147,6 +148,7 @@ export default function HistorialPage() {
     updateHistory(editingItem.id, {
       numero: editForm.numero.trim(),
       nombre: editForm.nombre.trim(),
+      cf: editForm.cf.trim(),
       fechaDiligencia: normalizarFecha(editForm.fecha),
       horaDiligencia: editForm.hora.trim(),
     });
@@ -310,6 +312,15 @@ export default function HistorialPage() {
                         value={editForm.numero}
                         onChange={(e) => setEditForm({ ...editForm, numero: e.target.value })}
                         placeholder="Ej: 001"
+                      />
+                    </div>
+                    <div>
+                      <label className="label">C.F.</label>
+                      <input
+                        className="field"
+                        value={editForm.cf}
+                        onChange={(e) => setEditForm({ ...editForm, cf: e.target.value })}
+                        placeholder="Ej: C.F. 123-2025"
                       />
                     </div>
                     <div>
