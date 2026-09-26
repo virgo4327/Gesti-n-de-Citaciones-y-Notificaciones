@@ -56,7 +56,7 @@ export default function OperationalDashboard() {
   const { history, addHistory, storageError } = useDocumentStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [openType, setOpenType] = useState<DocumentType | null>(null);
-  const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "" });
+  const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
   const [error, setError] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
 
@@ -107,11 +107,12 @@ export default function OperationalDashboard() {
         nombre: form.nombre.trim(),
         fechaDiligencia: normalizarFecha(form.fecha),
         horaDiligencia: form.hora.trim(),
+        cf: form.cf.trim(),
       } as any);
 
       window.open(TEMPLATE_FILES[openType], "_blank", "noopener,noreferrer");
 
-      setForm({ numero: "", nombre: "", fecha: "", hora: "" });
+      setForm({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
       handleCloseModal();
     } catch (e: any) {
       setError(e?.message || "Error al registrar la diligencia.");
@@ -260,6 +261,15 @@ export default function OperationalDashboard() {
                       onChange={(e) => setForm({ ...form, hora: e.target.value })}
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="label">C.F.</label>
+                  <input
+                    className="field"
+                    value={form.cf}
+                    onChange={(e) => setForm({ ...form, cf: e.target.value })}
+                    placeholder="Ej: Carpeta Fiscal N° 123-2025"
+                  />
                 </div>
               </div>
               <div className="mt-5 flex items-center justify-between gap-2">

@@ -365,7 +365,7 @@ export default function AgendaPage() {
                               <th className="px-4 py-2.5">Tipo</th>
                               <th className="px-4 py-2.5">N°</th>
                               <th className="px-4 py-2.5">Nombre / Citado</th>
-                              <th className="px-4 py-2.5">Delito</th>
+                              <th className="px-4 py-2.5">C.F.</th>
                               <th className="px-4 py-2.5 text-right">Acciones</th>
                             </tr>
                           </thead>
@@ -399,7 +399,7 @@ export default function AgendaPage() {
                                 </td>
                                 <td className="px-4 py-2.5 font-bold text-police">{item.numero}</td>
                                 <td className="px-4 py-2.5 font-semibold text-slate-900">{item.nombre}</td>
-                                <td className="px-4 py-2.5 text-slate-600 text-xs">{item.delito || "—"}</td>
+                                <td className="px-4 py-2.5 text-slate-600 text-xs">{(item as any).cf || "—"}</td>
                                 <td className="px-4 py-2.5 text-right">
                                   <div className="inline-flex items-center gap-1">
                                     <Button
