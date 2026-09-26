@@ -304,55 +304,55 @@ export default function HistorialPage() {
                       <span>{editError}</span>
                     </div>
                   )}
-                  <div className="grid gap-3">
-                    <div>
-                      <label className="label">Número</label>
-                      <input
-                        className="field"
-                        value={editForm.numero}
-                        onChange={(e) => setEditForm({ ...editForm, numero: e.target.value })}
-                        placeholder="Ej: 001"
-                      />
-                    </div>
-                    <div>
-                      <label className="label">C.F.</label>
-                      <input
-                        className="field"
-                        value={editForm.cf}
-                        onChange={(e) => setEditForm({ ...editForm, cf: e.target.value })}
-                        placeholder="Ej: C.F. 123-2025"
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Nombre / Citado</label>
-                      <input
-                        className="field"
-                        value={editForm.nombre}
-                        onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
-                        placeholder="Ej: JUAN CARLOS PÉREZ"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="label">Fecha</label>
-                        <input
-                          type="date"
-                          className="field"
-                          value={editForm.fecha}
-                          onChange={(e) => setEditForm({ ...editForm, fecha: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <label className="label">Hora</label>
-                        <input
-                          type="time"
-                          className="field"
-                          value={editForm.hora}
-                          onChange={(e) => setEditForm({ ...editForm, hora: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                   <div className="grid gap-3">
+                     <div>
+                       <label className="label">Número</label>
+                       <input
+                         className="field"
+                         value={editForm.numero}
+                         onChange={(e) => setEditForm({ ...editForm, numero: e.target.value })}
+                         placeholder="Ej: 001"
+                       />
+                     </div>
+                     <div>
+                       <label className="label">Nombre / Citado</label>
+                       <input
+                         className="field"
+                         value={editForm.nombre}
+                         onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                         placeholder="Ej: JUAN CARLOS PÉREZ"
+                       />
+                     </div>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div>
+                         <label className="label">Fecha</label>
+                         <input
+                           type="date"
+                           className="field"
+                           value={editForm.fecha}
+                           onChange={(e) => setEditForm({ ...editForm, fecha: e.target.value })}
+                         />
+                       </div>
+                       <div>
+                         <label className="label">Hora</label>
+                         <input
+                           type="time"
+                           className="field"
+                           value={editForm.hora}
+                           onChange={(e) => setEditForm({ ...editForm, hora: e.target.value })}
+                         />
+                       </div>
+                     </div>
+                     <div>
+                       <label className="label">C.F.</label>
+                       <input
+                         className="field"
+                         value={editForm.cf}
+                         onChange={(e) => setEditForm({ ...editForm, cf: e.target.value })}
+                         placeholder="Ej: C.F. 123-2025"
+                       />
+                     </div>
+                   </div>
                   <div className="mt-5 flex items-center justify-between gap-2">
                     {TEMPLATE_FILES[editingItem.type as string] && (
                       <button
