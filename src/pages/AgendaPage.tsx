@@ -158,11 +158,11 @@ export default function AgendaPage() {
   };
 
   const stats = useMemo(() => {
-    const total = agendaCompleta.length;
-    const vigentes = agendaCompleta.filter((i) => !i.esPasada).length;
-    const pasadas = agendaCompleta.filter((i) => i.esPasada).length;
+    const total = history.length;
+    const vigentes = agendaCompleta.filter((i) => i.timestamp > 0 && !i.esPasada).length;
+    const pasadas = agendaCompleta.filter((i) => i.timestamp > 0 && i.esPasada).length;
     return { total, vigentes, pasadas };
-  }, [agendaCompleta]);
+  }, [agendaCompleta, history.length]);
 
   const toggleFecha = (fecha: string) => {
     setFechaAbierta((prev) => (prev === fecha ? null : fecha));
