@@ -61,6 +61,10 @@ export type A2Data = {
   citacion3: string;
   fechaDiligencia: string;
   horaDiligencia: string;
+  fecha2: string;
+  hora2: string;
+  fecha3: string;
+  hora3: string;
   fechaDocumento: string;
 };
 
@@ -84,6 +88,10 @@ export type A3Data = {
   citacion3: string;
   fechaDiligencia: string;
   horaDiligencia: string;
+  fecha2: string;
+  hora2: string;
+  fecha3: string;
+  hora3: string;
   fechaDocumento: string;
 };
 

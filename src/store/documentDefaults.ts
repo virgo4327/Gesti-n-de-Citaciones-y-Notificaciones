@@ -28,6 +28,10 @@ export const a2Defaults: A2Data = {
   citacion3: "",
   fechaDiligencia: "",
   horaDiligencia: "",
+  fecha2: "",
+  hora2: "",
+  fecha3: "",
+  hora3: "",
   fechaDocumento: "",
 };
 
@@ -51,6 +55,10 @@ export const a3Defaults: A3Data = {
   citacion3: "",
   fechaDiligencia: "",
   horaDiligencia: "",
+  fecha2: "",
+  hora2: "",
+  fecha3: "",
+  hora3: "",
   fechaDocumento: "",
 };
 

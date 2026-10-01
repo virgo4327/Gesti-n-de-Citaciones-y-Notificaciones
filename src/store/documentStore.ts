@@ -84,6 +84,10 @@ type Store = {
       horaDiligencia?: string;
       delito?: string;
       cf?: string;
+      fecha2?: string;
+      hora2?: string;
+      fecha3?: string;
+      hora3?: string;
     }
   ) => void;
   deleteHistory: (id: string) => void;
@@ -135,6 +139,10 @@ export const useDocumentStore = create<Store>()(
               horaDiligencia: newHora,
               fecha: newFecha,
               hora: newHora,
+              fecha2: updates.fecha2 !== undefined ? updates.fecha2 : p.fecha2 || "",
+              hora2: updates.hora2 !== undefined ? updates.hora2 : p.hora2 || "",
+              fecha3: updates.fecha3 !== undefined ? updates.fecha3 : p.fecha3 || "",
+              hora3: updates.hora3 !== undefined ? updates.hora3 : p.hora3 || "",
               delito: updates.delito !== undefined ? updates.delito : p.delito || p.modalidadDelito || "",
             };
             return {

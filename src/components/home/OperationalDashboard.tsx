@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useDocumentStore } from "../../store/documentStore";
-import { normalizarFecha, verificarConflictoFechaHora } from "../../lib/schedule";
+import { normalizarFecha, verificarConflictoFechaHora, fechaATimestamp } from "../../lib/schedule";
 import type { DocumentType } from "../../types";
 
 const TEMPLATE_FILES: Record<string, string> = {
@@ -56,7 +56,7 @@ export default function OperationalDashboard() {
   const { history, addHistory, storageError } = useDocumentStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [openType, setOpenType] = useState<DocumentType | null>(null);
-  const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
+  const [form, setForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", fecha2: "", hora2: "", fecha3: "", hora3: "", cf: "" });
   const [error, setError] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
 
@@ -93,26 +93,72 @@ export default function OperationalDashboard() {
       return;
     }
 
-    // Validación estricta de duplicados por fecha y hora
-    const conflicto = verificarConflictoFechaHora(form.fecha, form.hora, history);
-    if (conflicto.existe) {
-      setError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora. No se permiten duplicados.");
-      return;
+    const citacionTypes = ["a2", "a3"];
+    const fechasParaValidar: Array<{ fecha: string; hora: string }> = [
+      { fecha: form.fecha, hora: form.hora },
+    ];
+
+    if (citacionTypes.includes(openType)) {
+      if (form.fecha2.trim() || form.hora2.trim()) {
+        if (!form.fecha2.trim() || !form.hora2.trim()) {
+          setError("Complete fecha y hora 2 o déjelas vacías.");
+          return;
+        }
+        fechasParaValidar.push({ fecha: form.fecha2, hora: form.hora2 });
+      }
+      if (form.fecha3.trim() || form.hora3.trim()) {
+        if (!form.fecha3.trim() || !form.hora3.trim()) {
+          setError("Complete fecha y hora 3 o déjelas vacías.");
+          return;
+        }
+        fechasParaValidar.push({ fecha: form.fecha3, hora: form.hora3 });
+      }
+    }
+
+    for (const fh of fechasParaValidar) {
+      const conflicto = verificarConflictoFechaHora(fh.fecha, fh.hora, history);
+      if (conflicto.existe) {
+        setError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.");
+        return;
+      }
+    }
+
+    const internos = fechasParaValidar.slice(1);
+    for (let i = 0; i < internos.length; i++) {
+      for (let j = i + 1; j < internos.length; j++) {
+        const a = internos[i];
+        const b = internos[j];
+        const tsA = fechaATimestamp(a.fecha, a.hora);
+        const tsB = fechaATimestamp(b.fecha, b.hora);
+        if (tsA > 0 && tsB > 0 && tsA === tsB) {
+          setError("Las fechas/horas alternativas no pueden ser iguales entre sí.");
+          return;
+        }
+      }
     }
 
     setOpening(true);
     try {
-      addHistory(openType, {
+      const payload: any = {
         numero: form.numero.trim(),
         nombre: form.nombre.trim(),
         fechaDiligencia: normalizarFecha(form.fecha),
         horaDiligencia: form.hora.trim(),
         cf: form.cf.trim(),
-      } as any);
+      };
+
+      if (citacionTypes.includes(openType)) {
+        payload.fecha2 = normalizarFecha(form.fecha2);
+        payload.hora2 = form.hora2.trim();
+        payload.fecha3 = normalizarFecha(form.fecha3);
+        payload.hora3 = form.hora3.trim();
+      }
+
+      addHistory(openType, payload);
 
       window.open(TEMPLATE_FILES[openType], "_blank", "noopener,noreferrer");
 
-      setForm({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
+      setForm({ numero: "", nombre: "", fecha: "", hora: "", fecha2: "", hora2: "", fecha3: "", hora3: "", cf: "" });
       handleCloseModal();
     } catch (e: any) {
       setError(e?.message || "Error al registrar la diligencia.");
@@ -223,55 +269,99 @@ export default function OperationalDashboard() {
                   <span>{storageError}</span>
                 </div>
               )}
-              <div className="grid gap-3">
-                <div>
-                  <label className="label">Número</label>
-                  <input
-                    className="field"
-                    value={form.numero}
-                    onChange={(e) => setForm({ ...form, numero: e.target.value })}
-                    placeholder="Ej: 001"
-                  />
-                </div>
-                <div>
-                  <label className="label">Nombre / Citado</label>
-                  <input
-                    className="field"
-                    value={form.nombre}
-                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                    placeholder="Ej: JUAN CARLOS PÉREZ"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="label">Fecha</label>
-                    <input
-                      type="date"
-                      className="field"
-                      value={form.fecha}
-                      onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Hora</label>
-                    <input
-                      type="time"
-                      className="field"
-                      value={form.hora}
-                      onChange={(e) => setForm({ ...form, hora: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="label">C.F.</label>
-                  <input
-                    className="field"
-                    value={form.cf}
-                    onChange={(e) => setForm({ ...form, cf: e.target.value })}
-                    placeholder="Ej: Carpeta Fiscal N° 123-2025"
-                  />
-                </div>
-              </div>
+               <div className="grid gap-3">
+                 <div>
+                   <label className="label">Número</label>
+                   <input
+                     className="field"
+                     value={form.numero}
+                     onChange={(e) => setForm({ ...form, numero: e.target.value })}
+                     placeholder="Ej: 001"
+                   />
+                 </div>
+                 <div>
+                   <label className="label">Nombre / Citado</label>
+                   <input
+                     className="field"
+                     value={form.nombre}
+                     onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                     placeholder="Ej: JUAN CARLOS PÉREZ"
+                   />
+                 </div>
+                 <div className="grid grid-cols-2 gap-3">
+                   <div>
+                     <label className="label">Fecha</label>
+                     <input
+                       type="date"
+                       className="field"
+                       value={form.fecha}
+                       onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                     />
+                   </div>
+                   <div>
+                     <label className="label">Hora</label>
+                     <input
+                       type="time"
+                       className="field"
+                       value={form.hora}
+                       onChange={(e) => setForm({ ...form, hora: e.target.value })}
+                     />
+                   </div>
+                 </div>
+                 {openType === "a2" || openType === "a3" ? (
+                   <>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div>
+                         <label className="label">Fecha 2</label>
+                         <input
+                           type="date"
+                           className="field"
+                           value={form.fecha2}
+                           onChange={(e) => setForm({ ...form, fecha2: e.target.value })}
+                         />
+                       </div>
+                       <div>
+                         <label className="label">Hora 2</label>
+                         <input
+                           type="time"
+                           className="field"
+                           value={form.hora2}
+                           onChange={(e) => setForm({ ...form, hora2: e.target.value })}
+                         />
+                       </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div>
+                         <label className="label">Fecha 3</label>
+                         <input
+                           type="date"
+                           className="field"
+                           value={form.fecha3}
+                           onChange={(e) => setForm({ ...form, fecha3: e.target.value })}
+                         />
+                       </div>
+                       <div>
+                         <label className="label">Hora 3</label>
+                         <input
+                           type="time"
+                           className="field"
+                           value={form.hora3}
+                           onChange={(e) => setForm({ ...form, hora3: e.target.value })}
+                         />
+                       </div>
+                     </div>
+                   </>
+                 ) : null}
+                 <div>
+                   <label className="label">C.F.</label>
+                   <input
+                     className="field"
+                     value={form.cf}
+                     onChange={(e) => setForm({ ...form, cf: e.target.value })}
+                     placeholder="Ej: Carpeta Fiscal N° 123-2025"
+                   />
+                 </div>
+               </div>
               <div className="mt-5 flex items-center justify-between gap-2">
                 <button
                   type="button"

@@ -64,7 +64,7 @@ export default function AgendaPage() {
 
   // Estado para modal de edición
   const [editingItem, setEditingItem] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", cf: "" });
+  const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", fecha2: "", hora2: "", fecha3: "", hora3: "", cf: "" });
   const [editError, setEditError] = useState<string | null>(null);
 
   // Construir agenda completa
@@ -117,7 +117,11 @@ export default function AgendaPage() {
       nombre: item.nombre || payload.nombre || "",
       fecha: fechaVal,
       hora: payload.horaDiligencia || payload.hora || "",
-      cf: payload.cf || "",
+      fecha2: normalizarFecha(payload.fecha2 || "") || "",
+      hora2: payload.hora2 || "",
+      fecha3: normalizarFecha(payload.fecha3 || "") || "",
+      hora3: payload.hora3 || "",
+      cf: (item as any).cf || payload.cf || "",
     });
     setEditError(null);
     setEditingItem(item);
@@ -127,24 +131,65 @@ export default function AgendaPage() {
     if (!editingItem) return;
     setEditError(null);
 
-      if (!editForm.numero.trim() || !editForm.nombre.trim() || !editForm.fecha.trim() || !editForm.hora.trim()) {
-        setEditError("Complete número, nombre, fecha y hora de la diligencia.");
-        return;
-      }
+    if (!editForm.numero.trim() || !editForm.nombre.trim() || !editForm.fecha.trim() || !editForm.hora.trim()) {
+      setEditError("Complete número, nombre, fecha y hora de la diligencia.");
+      return;
+    }
 
-      const conflicto = verificarConflictoFechaHora(editForm.fecha, editForm.hora, history, editingItem.id);
+    const fechasBase = [
+      { fecha: editForm.fecha, hora: editForm.hora },
+    ];
+
+    const fechasAdicionales: Array<{ fecha: string; hora: string }> = [];
+
+    if (editingItem.type === "a2" || editingItem.type === "a3") {
+      if (editForm.fecha2.trim() || editForm.hora2.trim()) {
+        if (!editForm.fecha2.trim() || !editForm.hora2.trim()) {
+          setEditError("Complete fecha y hora 2 o déjelas vacías.");
+          return;
+        }
+        fechasAdicionales.push({ fecha: editForm.fecha2, hora: editForm.hora2 });
+      }
+      if (editForm.fecha3.trim() || editForm.hora3.trim()) {
+        if (!editForm.fecha3.trim() || !editForm.hora3.trim()) {
+          setEditError("Complete fecha y hora 3 o déjelas vacías.");
+          return;
+        }
+        fechasAdicionales.push({ fecha: editForm.fecha3, hora: editForm.hora3 });
+      }
+    }
+
+    const todas = [...fechasBase, ...fechasAdicionales];
+    for (let i = 0; i < todas.length; i++) {
+      for (let j = i + 1; j < todas.length; j++) {
+        const tsA = fechaATimestamp(todas[i].fecha, todas[i].hora);
+        const tsB = fechaATimestamp(todas[j].fecha, todas[j].hora);
+        if (tsA > 0 && tsB > 0 && tsA === tsB) {
+          setEditError("Las fechas/horas de la citación no pueden repetirse entre sí.");
+          return;
+        }
+      }
+    }
+
+    for (const fh of todas) {
+      const conflicto = verificarConflictoFechaHora(fh.fecha, fh.hora, history, editingItem.id);
       if (conflicto.existe) {
         setEditError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.");
         return;
       }
+    }
 
-      updateHistory(editingItem.id, {
-        numero: editForm.numero.trim(),
-        nombre: editForm.nombre.trim(),
-        fechaDiligencia: normalizarFecha(editForm.fecha),
-        horaDiligencia: editForm.hora.trim(),
-        cf: editForm.cf.trim(),
-      } as any);
+    updateHistory(editingItem.id, {
+      numero: editForm.numero.trim(),
+      nombre: editForm.nombre.trim(),
+      fechaDiligencia: normalizarFecha(editForm.fecha),
+      horaDiligencia: editForm.hora.trim(),
+      cf: editForm.cf.trim(),
+      fecha2: normalizarFecha(editForm.fecha2),
+      hora2: editForm.hora2.trim(),
+      fecha3: normalizarFecha(editForm.fecha3),
+      hora3: editForm.hora3.trim(),
+    } as any);
 
     setEditingItem(null);
   };
@@ -362,6 +407,7 @@ export default function AgendaPage() {
                           <thead className="bg-slate-100 text-xs uppercase text-slate-600">
                             <tr>
                               <th className="px-4 py-2.5">Categoría</th>
+                              <th className="px-4 py-2.5">Fec.</th>
                               <th className="px-4 py-2.5">Hora</th>
                               <th className="px-4 py-2.5">Estado</th>
                               <th className="px-4 py-2.5">Tipo</th>
@@ -378,6 +424,7 @@ export default function AgendaPage() {
                                 className={`border-t transition hover:bg-slate-50 ${item.esPasada ? "bg-slate-50/60 opacity-85" : ""}`}
                               >
                                 <td className="px-4 py-2.5 font-semibold text-police">{documentCategory[item.type] || "—"}</td>
+                                <td className="px-4 py-2.5 text-xs font-bold text-slate-600">{item.indiceFecha || 1}</td>
                                 <td className="px-4 py-2.5">
                                   <span className="inline-flex items-center gap-1 font-bold text-slate-800">
                                     <Clock className="h-3.5 w-3.5 text-police" /> {item.hora || "Sin hora"}
@@ -401,7 +448,7 @@ export default function AgendaPage() {
                                 </td>
                                 <td className="px-4 py-2.5 font-bold text-police">{item.numero}</td>
                                 <td className="px-4 py-2.5 font-semibold text-slate-900">{item.nombre}</td>
-                                <td className="px-4 py-2.5 text-slate-600 text-xs">{item.cf || "—"}</td>
+                                <td className="px-4 py-2.5 text-slate-600 text-xs">{(item as any).cf || "—"}</td>
                                 <td className="px-4 py-2.5 text-right">
                                   <div className="inline-flex items-center gap-1">
                                     <Button
@@ -480,55 +527,99 @@ export default function AgendaPage() {
                       <span>{editError}</span>
                     </div>
                   )}
-                  <div className="grid gap-3">
-                    <div>
-                      <label className="label">Número</label>
-                      <input
-                        className="field"
-                        value={editForm.numero}
-                        onChange={(e) => setEditForm({ ...editForm, numero: e.target.value })}
-                        placeholder="Ej: 001"
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Nombre / Citado</label>
-                      <input
-                        className="field"
-                        value={editForm.nombre}
-                        onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
-                        placeholder="Ej: JUAN CARLOS PÉREZ"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="label">Fecha</label>
-                        <input
-                          type="date"
-                          className="field"
-                          value={editForm.fecha}
-                          onChange={(e) => setEditForm({ ...editForm, fecha: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <label className="label">Hora</label>
-                        <input
-                          type="time"
-                          className="field"
-                          value={editForm.hora}
-                          onChange={(e) => setEditForm({ ...editForm, hora: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="label">C.F.</label>
-                      <input
-                        className="field"
-                        value={editForm.cf}
-                        onChange={(e) => setEditForm({ ...editForm, cf: e.target.value })}
-                        placeholder="Ej: Carpeta Fiscal N° 123-2025"
-                      />
-                    </div>
-                  </div>
+                   <div className="grid gap-3">
+                     <div>
+                       <label className="label">Número</label>
+                       <input
+                         className="field"
+                         value={editForm.numero}
+                         onChange={(e) => setEditForm({ ...editForm, numero: e.target.value })}
+                         placeholder="Ej: 001"
+                       />
+                     </div>
+                     <div>
+                       <label className="label">Nombre / Citado</label>
+                       <input
+                         className="field"
+                         value={editForm.nombre}
+                         onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                         placeholder="Ej: JUAN CARLOS PÉREZ"
+                       />
+                     </div>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div>
+                         <label className="label">Fecha</label>
+                         <input
+                           type="date"
+                           className="field"
+                           value={editForm.fecha}
+                           onChange={(e) => setEditForm({ ...editForm, fecha: e.target.value })}
+                         />
+                       </div>
+                       <div>
+                         <label className="label">Hora</label>
+                         <input
+                           type="time"
+                           className="field"
+                           value={editForm.hora}
+                           onChange={(e) => setEditForm({ ...editForm, hora: e.target.value })}
+                         />
+                       </div>
+                     </div>
+                     {editingItem.type === "a2" || editingItem.type === "a3" ? (
+                       <>
+                         <div className="grid grid-cols-2 gap-3">
+                           <div>
+                             <label className="label">Fecha 2</label>
+                             <input
+                               type="date"
+                               className="field"
+                               value={editForm.fecha2}
+                               onChange={(e) => setEditForm({ ...editForm, fecha2: e.target.value })}
+                             />
+                           </div>
+                           <div>
+                             <label className="label">Hora 2</label>
+                             <input
+                               type="time"
+                               className="field"
+                               value={editForm.hora2}
+                               onChange={(e) => setEditForm({ ...editForm, hora2: e.target.value })}
+                             />
+                           </div>
+                         </div>
+                         <div className="grid grid-cols-2 gap-3">
+                           <div>
+                             <label className="label">Fecha 3</label>
+                             <input
+                               type="date"
+                               className="field"
+                               value={editForm.fecha3}
+                               onChange={(e) => setEditForm({ ...editForm, fecha3: e.target.value })}
+                             />
+                           </div>
+                           <div>
+                             <label className="label">Hora 3</label>
+                             <input
+                               type="time"
+                               className="field"
+                               value={editForm.hora3}
+                               onChange={(e) => setEditForm({ ...editForm, hora3: e.target.value })}
+                             />
+                           </div>
+                         </div>
+                       </>
+                     ) : null}
+                     <div>
+                       <label className="label">C.F.</label>
+                       <input
+                         className="field"
+                         value={editForm.cf}
+                         onChange={(e) => setEditForm({ ...editForm, cf: e.target.value })}
+                         placeholder="Ej: Carpeta Fiscal N° 123-2025"
+                       />
+                     </div>
+                   </div>
                   <div className="mt-5 flex items-center justify-between gap-2">
                     {TEMPLATE_FILES[editingItem.type as string] && (
                       <button

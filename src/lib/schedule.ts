@@ -75,7 +75,7 @@ export type Conflicto = {
   minutosDiferencia?: number;
 };
 
-export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: string; delito: string; nombre: string; cf: string } {
+export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: string; delito: string; nombre: string; cf: string; fechasAlternativas: Array<{ fecha: string; hora: string }> } {
   const p = item.payload as any;
   const type = item.type;
 
@@ -84,11 +84,18 @@ export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: stri
   let delito = "";
   let nombre = item.nombre || p.nombre || "";
   let cf = p.cf || "";
+  const fechasAlternativas: Array<{ fecha: string; hora: string }> = [];
 
   if (type === "a2" || type === "a3") {
     fecha = normalizarFecha(p.fechaDiligencia || "");
     hora = p.horaDiligencia || "";
     delito = p.modalidadDelito || "";
+    const f2 = normalizarFecha(p.fecha2 || "");
+    const h2 = p.hora2 || "";
+    const f3 = normalizarFecha(p.fecha3 || "");
+    const h3 = p.hora3 || "";
+    if (f2 && h2) fechasAlternativas.push({ fecha: f2, hora: h2 });
+    if (f3 && h3) fechasAlternativas.push({ fecha: f3, hora: h3 });
   } else if (type === "a4" || type === "a5") {
     fecha = normalizarFecha(p.fechaDiligencia || "");
     hora = p.horaDiligencia || "";
@@ -105,7 +112,7 @@ export function extraerFechaHora(item: HistoryItem): { fecha: string; hora: stri
     delito = p.delito || "";
   }
 
-  return { fecha, hora, delito, nombre, cf };
+  return { fecha, hora, delito, nombre, cf, fechasAlternativas };
 }
 
 export function detectarConflictos(
@@ -195,6 +202,7 @@ export type AgendaItem = {
   timestamp: number;
   esPasada: boolean;
   esCitado?: boolean;
+  indiceFecha: number;
 };
 
 export function construirAgenda(history: HistoryItem[]): AgendaItem[] {
@@ -202,21 +210,35 @@ export function construirAgenda(history: HistoryItem[]): AgendaItem[] {
   const now = Date.now();
 
   for (const item of history) {
-    const { fecha, hora, delito, nombre, cf } = extraerFechaHora(item);
+    const { fecha, hora, delito, nombre, cf, fechasAlternativas } = extraerFechaHora(item);
+    const pares: Array<{ fecha: string; hora: string; indice: number }> = [];
 
     if (fecha && hora) {
-      const ts = fechaATimestamp(fecha, hora);
+      pares.push({ fecha, hora, indice: 1 });
+    }
+
+    for (const fa of fechasAlternativas) {
+      if (fa.fecha && fa.hora) {
+        pares.push({ fecha: fa.fecha, hora: fa.hora, indice: pares.length + 1 });
+      }
+    }
+
+    if (!pares.length) continue;
+
+    for (const par of pares) {
+      const ts = fechaATimestamp(par.fecha, par.hora);
       items.push({
         id: item.id,
         type: item.type,
         numero: item.numero,
         nombre: nombre || item.nombre,
-        fecha,
-        hora,
+        fecha: par.fecha,
+        hora: par.hora,
         delito,
         cf,
         timestamp: ts,
         esPasada: ts > 0 ? ts < now : false,
+        indiceFecha: par.indice,
       });
     }
   }
