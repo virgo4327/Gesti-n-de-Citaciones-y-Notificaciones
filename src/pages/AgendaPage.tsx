@@ -165,7 +165,9 @@ export default function AgendaPage() {
         const tsA = fechaATimestamp(todas[i].fecha, todas[i].hora);
         const tsB = fechaATimestamp(todas[j].fecha, todas[j].hora);
         if (tsA > 0 && tsB > 0 && tsA === tsB) {
-          setEditError("Las fechas/horas de la citación no pueden repetirse entre sí.");
+          const msg = "Las fechas/horas de la citación no pueden repetirse entre sí.";
+          setEditError(msg);
+          alert(msg);
           return;
         }
       }
@@ -174,7 +176,9 @@ export default function AgendaPage() {
     for (const fh of todas) {
       const conflicto = verificarConflictoFechaHora(fh.fecha, fh.hora, history, editingItem.id);
       if (conflicto.existe) {
-        setEditError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.");
+        const msg = conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.";
+        setEditError(msg);
+        alert(msg);
         return;
       }
     }

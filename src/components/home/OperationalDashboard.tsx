@@ -118,7 +118,9 @@ export default function OperationalDashboard() {
     for (const fh of fechasParaValidar) {
       const conflicto = verificarConflictoFechaHora(fh.fecha, fh.hora, history);
       if (conflicto.existe) {
-        setError(conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.");
+        const msg = conflicto.mensaje || "Ya existe una diligencia programada en la misma fecha y hora.";
+        setError(msg);
+        alert(msg);
         return;
       }
     }
@@ -131,7 +133,9 @@ export default function OperationalDashboard() {
         const tsA = fechaATimestamp(a.fecha, a.hora);
         const tsB = fechaATimestamp(b.fecha, b.hora);
         if (tsA > 0 && tsB > 0 && tsA === tsB) {
-          setError("Las fechas/horas alternativas no pueden ser iguales entre sí.");
+          const msg = "Las fechas/horas alternativas no pueden ser iguales entre sí.";
+          setError(msg);
+          alert(msg);
           return;
         }
       }
