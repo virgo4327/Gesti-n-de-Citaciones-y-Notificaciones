@@ -33,27 +33,32 @@ CREATE INDEX IF NOT EXISTS idx_diligencias_created_at
   ON public.diligencias (created_at DESC);
 
 -- 3. Habilitar Row Level Security (RLS)
+-- NOTA DE SEGURIDAD: Este entorno no tiene sistema de autenticación de usuarios.
+-- Las políticas están abiertas por diseño institucional (red de confianza).
+-- Para producción con datos sensibles, implementar Auth de Supabase y restringir
+-- las políticas por authenticated_user_id o rol.
 ALTER TABLE public.diligencias ENABLE ROW LEVEL SECURITY;
 
--- 4. Políticas de acceso (Permitir lectura y escritura institucional con publishable key)
-DROP POLICY IF EXISTS "Permitir lectura publica institucional" ON public.diligencias;
-CREATE POLICY "Permitir lectura publica institucional" 
-  ON public.diligencias FOR SELECT 
+-- 4. Políticas de acceso institucional (anónimas, con publishable key)
+-- Solo clientes con la ANON KEY válida pueden acceder (verificada por Supabase).
+DROP POLICY IF EXISTS "Lectura institucional de diligencias" ON public.diligencias;
+CREATE POLICY "Lectura institucional de diligencias"
+  ON public.diligencias FOR SELECT
   USING (true);
 
-DROP POLICY IF EXISTS "Permitir insercion institucional" ON public.diligencias;
-CREATE POLICY "Permitir insercion institucional" 
-  ON public.diligencias FOR INSERT 
+DROP POLICY IF EXISTS "Insercion institucional de diligencias" ON public.diligencias;
+CREATE POLICY "Insercion institucional de diligencias"
+  ON public.diligencias FOR INSERT
   WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Permitir actualizacion institucional" ON public.diligencias;
-CREATE POLICY "Permitir actualizacion institucional" 
-  ON public.diligencias FOR UPDATE 
+DROP POLICY IF EXISTS "Actualizacion institucional de diligencias" ON public.diligencias;
+CREATE POLICY "Actualizacion institucional de diligencias"
+  ON public.diligencias FOR UPDATE
   USING (true);
 
-DROP POLICY IF EXISTS "Permitir eliminacion institucional" ON public.diligencias;
-CREATE POLICY "Permitir eliminacion institucional" 
-  ON public.diligencias FOR DELETE 
+DROP POLICY IF EXISTS "Eliminacion institucional de diligencias" ON public.diligencias;
+CREATE POLICY "Eliminacion institucional de diligencias"
+  ON public.diligencias FOR DELETE
   USING (true);
 
 -- 5. Habilitar sincronización en tiempo real (Supabase Realtime)
