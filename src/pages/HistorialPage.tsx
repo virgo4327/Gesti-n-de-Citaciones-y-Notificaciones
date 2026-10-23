@@ -1,4 +1,4 @@
-import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Edit3, X, ExternalLink } from "lucide-react";
+import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Edit3, X, ExternalLink, FileDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -208,15 +208,123 @@ export default function HistorialPage() {
     return { fecha, hora };
   };
 
+  const handleDownloadHistorialPdf = () => {
+    const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40;
+    const usableWidth = pageWidth - margin * 2;
+
+    const cols = [
+      { header: "N°", width: usableWidth * 0.07 },
+      { header: "Categoría", width: usableWidth * 0.12 },
+      { header: "Documento", width: usableWidth * 0.25 },
+      { header: "Nombre / Citado", width: usableWidth * 0.28 },
+      { header: "Fecha", width: usableWidth * 0.14 },
+      { header: "Hora", width: usableWidth * 0.14 },
+    ];
+
+    const rowHeight = 22;
+    const headerHeight = 28;
+    let y = margin;
+    let page = 1;
+
+    const drawHeader = () => {
+      // Título
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(30, 58, 138);
+      pdf.text("HISTORIAL DE EMISIONES — DEPDICC", margin, y);
+      y += 8;
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Generado: ${new Date().toLocaleString("es-PE")}  •  ${filtered.length} registro(s)`, margin, y + 10);
+      y += 24;
+
+      // Cabecera de tabla
+      pdf.setFillColor(30, 58, 138);
+      pdf.rect(margin, y, usableWidth, headerHeight, "F");
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(255, 255, 255);
+      let x = margin;
+      for (const col of cols) {
+        pdf.text(col.header, x + 6, y + headerHeight / 2 + 3);
+        x += col.width;
+      }
+      y += headerHeight;
+    };
+
+    drawHeader();
+
+    filtered.forEach((item, idx) => {
+      if (y + rowHeight > pageHeight - 40) {
+        // Footer
+        pdf.setFontSize(7);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(`Página ${page}`, pageWidth - margin - 40, pageHeight - 20);
+        pdf.addPage();
+        page++;
+        y = margin;
+        drawHeader();
+      }
+
+      const { fecha, hora } = obtenerFechaHora(item);
+      const categoria = documentCategory[item.type] || "—";
+      const docLabel = documentLabels[item.type] || item.type.toUpperCase();
+
+      // Fondo alternado
+      if (idx % 2 === 0) {
+        pdf.setFillColor(245, 247, 250);
+        pdf.rect(margin, y, usableWidth, rowHeight, "F");
+      }
+
+      // Borde inferior
+      pdf.setDrawColor(220, 220, 220);
+      pdf.line(margin, y + rowHeight, margin + usableWidth, y + rowHeight);
+
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(30, 30, 30);
+
+      const rowData = [item.numero || "—", categoria, docLabel, item.nombre || "—", fecha || "—", hora || "—"];
+      let x = margin;
+      for (let i = 0; i < cols.length; i++) {
+        const text = pdf.splitTextToSize(rowData[i], cols[i].width - 10)[0] || "";
+        pdf.text(text, x + 6, y + rowHeight / 2 + 3);
+        x += cols[i].width;
+      }
+
+      y += rowHeight;
+    });
+
+    // Footer última página
+    pdf.setFontSize(7);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text(`Página ${page}`, pageWidth - margin - 40, pageHeight - 20);
+
+    pdf.save(`historial_emisiones_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
     <>
       <Navbar />
       <main className="lg:flex">
         <Sidebar />
         <section className="min-h-[calc(100vh-70px)] flex-1 bg-paper p-4 md:p-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-black text-police">Historial de Emisiones</h1>
-            <p className="mt-1 text-slate-600">Documentos generados y registrados en la base de datos institucional.</p>
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-black text-police">Historial de Emisiones</h1>
+              <p className="mt-1 text-slate-600">Documentos generados y registrados en la base de datos institucional.</p>
+            </div>
+            <Button
+              onClick={handleDownloadHistorialPdf}
+              disabled={filtered.length === 0}
+              className="flex items-center gap-2 bg-police hover:bg-police/90 text-white"
+            >
+              <FileDown className="h-4 w-4" /> Descargar Historial PDF
+            </Button>
           </div>
 
           <div className="mb-5 grid gap-3 rounded-lg border bg-white p-4 shadow-sm md:grid-cols-[1fr_220px_220px]">
