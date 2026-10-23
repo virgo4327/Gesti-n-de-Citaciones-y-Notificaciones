@@ -1,4 +1,2 @@
 User-agent: *
-Allow: /
-
-Sitemap: https://gesti-n-de-citaciones-y-notificaciones-jpyzas6q4.vercel.app/sitemap.xml
+Disallow: /
