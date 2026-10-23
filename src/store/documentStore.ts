@@ -2,6 +2,32 @@ import { create } from "zustand";
 import type { DocumentPayload, DocumentType, HistoryItem } from "../types";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 
+const LOCAL_STORAGE_KEY = "depdicc_diligencias_history";
+
+// --- Helpers de localStorage ---
+
+function loadFromLocalStorage(): HistoryItem[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+function saveToLocalStorage(history: HistoryItem[]) {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(history));
+  } catch (e) {
+    console.warn("Error guardando en localStorage:", e);
+  }
+}
+
+// --- Mappers Supabase ---
+
 function mapRowToHistoryItem(row: any): HistoryItem {
   const p = row.payload || {};
   return {
@@ -82,7 +108,8 @@ type Store = {
 
 export const useDocumentStore = create<Store>()((set, getStore) => ({
   drafts: {},
-  history: [],
+  // Cargar inmediatamente desde localStorage para que la lista no esté vacía al inicio
+  history: loadFromLocalStorage(),
   storageError: null,
   isSyncing: false,
   cloudConfigured: isSupabaseConfigured(),
@@ -101,7 +128,12 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
     };
 
     // Actualización inmediata en estado en memoria
-    set((state) => ({ history: [item, ...state.history] }));
+    set((state) => {
+      const newHistory = [item, ...state.history];
+      // Persistir siempre en localStorage como respaldo
+      saveToLocalStorage(newHistory);
+      return { history: newHistory };
+    });
 
     // Inserción directa en la base de datos de Supabase
     if (supabase && isSupabaseConfigured()) {
@@ -166,6 +198,8 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
         return mapped;
       });
 
+      // Persistir siempre en localStorage como respaldo
+      saveToLocalStorage(nextHistory);
       return { history: nextHistory };
     });
 
@@ -199,7 +233,12 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
   },
 
   deleteHistory: (id) => {
-    set((state) => ({ history: state.history.filter((item) => item.id !== id) }));
+    set((state) => {
+      const newHistory = state.history.filter((item) => item.id !== id);
+      // Persistir siempre en localStorage como respaldo
+      saveToLocalStorage(newHistory);
+      return { history: newHistory };
+    });
 
     // Eliminación directa en la base de datos de Supabase
     if (supabase && isSupabaseConfigured()) {
@@ -226,7 +265,18 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
   clearStorageError: () => set({ storageError: null }),
 
   fetchFromCloud: async () => {
-    if (!supabase || !isSupabaseConfigured()) return;
+    if (!supabase || !isSupabaseConfigured()) {
+      // Sin Supabase válido: cargar desde localStorage (ya se cargó en el init,
+      // pero refrescamos por si acaso)
+      const localItems = loadFromLocalStorage();
+      if (localItems.length > 0) {
+        set({ history: localItems, cloudConfigured: false });
+      } else {
+        set({ cloudConfigured: false });
+      }
+      return;
+    }
+
     set({ isSyncing: true, storageError: null });
 
     try {
@@ -239,6 +289,11 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
       if (error) {
         console.error("Error al consultar Supabase:", error);
         set({ storageError: `Error de base de datos: ${error.message}` });
+        // Caer a localStorage si Supabase falla
+        const localItems = loadFromLocalStorage();
+        if (localItems.length > 0) {
+          set({ history: localItems });
+        }
         return;
       }
 
@@ -246,10 +301,17 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
         const cloudItems = data.map(mapRowToHistoryItem);
         // La lista se reemplaza 100% con los datos de Supabase (sin combinar con datos locales viejos)
         set({ history: cloudItems, cloudConfigured: true });
+        // Sincronizar localStorage con la versión de la nube
+        saveToLocalStorage(cloudItems);
       }
     } catch (err: any) {
       console.error("Fallo inesperado al conectar con Supabase:", err);
       set({ storageError: "No se pudo conectar a la base de datos de Supabase." });
+      // Caer a localStorage si hay fallo de red
+      const localItems = loadFromLocalStorage();
+      if (localItems.length > 0) {
+        set({ history: localItems });
+      }
     } finally {
       set({ isSyncing: false });
     }
@@ -299,7 +361,9 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
           const newItem = mapRowToHistoryItem(payload.new);
           set((state) => {
             if (state.history.some((it) => it.id === newItem.id)) return state;
-            return { history: [newItem, ...state.history] };
+            const newHistory = [newItem, ...state.history];
+            saveToLocalStorage(newHistory);
+            return { history: newHistory };
           });
         }
       )
@@ -308,11 +372,13 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
         { event: "UPDATE", schema: "public", table: "diligencias" },
         (payload) => {
           const updatedItem = mapRowToHistoryItem(payload.new);
-          set((state) => ({
-            history: state.history.map((it) =>
+          set((state) => {
+            const newHistory = state.history.map((it) =>
               it.id === updatedItem.id ? updatedItem : it
-            ),
-          }));
+            );
+            saveToLocalStorage(newHistory);
+            return { history: newHistory };
+          });
         }
       )
       .on(
@@ -321,9 +387,11 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
         (payload) => {
           const deletedId = (payload.old as any)?.id;
           if (deletedId) {
-            set((state) => ({
-              history: state.history.filter((it) => it.id !== deletedId),
-            }));
+            set((state) => {
+              const newHistory = state.history.filter((it) => it.id !== deletedId);
+              saveToLocalStorage(newHistory);
+              return { history: newHistory };
+            });
           }
         }
       )
