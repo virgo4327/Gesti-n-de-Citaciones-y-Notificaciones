@@ -1,4 +1,4 @@
-import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Edit3, X, ExternalLink, UploadCloud, CheckCircle2 } from "lucide-react";
+import { Download, Search, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Edit3, X, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -23,23 +23,11 @@ const TEMPLATE_FILES: Record<string, string> = {
 };
 
 export default function HistorialPage() {
-  const { history, deleteHistory, updateHistory, storageError, clearStorageError, cloudConfigured, isSyncing, syncLocalToCloud } = useDocumentStore();
+  const { history, deleteHistory, updateHistory, storageError, clearStorageError } = useDocumentStore();
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("todos");
   const [sortOrder, setSortOrder] = useState<"cronologico-desc" | "cronologico-asc" | "numero">("cronologico-desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [syncStatus, setSyncStatus] = useState<string | null>(null);
-
-  const handleSyncToCloud = async () => {
-    setSyncStatus(null);
-    const res = await syncLocalToCloud();
-    if (res.error) {
-      alert("Error al sincronizar con Supabase: " + res.error);
-    } else {
-      setSyncStatus(`¡${res.uploaded} registro(s) sincronizados con la nube con éxito!`);
-      setTimeout(() => setSyncStatus(null), 4000);
-    }
-  };
 
   // Estado para modal de edición
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -226,29 +214,9 @@ export default function HistorialPage() {
       <main className="lg:flex">
         <Sidebar />
         <section className="min-h-[calc(100vh-70px)] flex-1 bg-paper p-4 md:p-8">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-black text-police">Historial de Emisiones</h1>
-              <p className="mt-1 text-slate-600">Documentos generados y registrados en el sistema policial.</p>
-            </div>
-            {cloudConfigured && (
-              <div className="flex flex-col sm:items-end gap-1">
-                <Button
-                  variant="outline"
-                  onClick={handleSyncToCloud}
-                  disabled={isSyncing}
-                  className="flex items-center gap-2 border-police text-police hover:bg-police/5"
-                >
-                  <UploadCloud className="h-4 w-4" />
-                  {isSyncing ? "Sincronizando…" : "Subir Datos a Supabase"}
-                </Button>
-                {syncStatus && (
-                  <p className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> {syncStatus}
-                  </p>
-                )}
-              </div>
-            )}
+          <div className="mb-6">
+            <h1 className="text-3xl font-black text-police">Historial de Emisiones</h1>
+            <p className="mt-1 text-slate-600">Documentos generados y registrados en la base de datos institucional.</p>
           </div>
 
           <div className="mb-5 grid gap-3 rounded-lg border bg-white p-4 shadow-sm md:grid-cols-[1fr_220px_220px]">
