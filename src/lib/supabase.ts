@@ -12,9 +12,7 @@ export const isSupabaseConfigured = (): boolean => {
     Boolean(supabaseUrl) &&
     Boolean(supabaseAnonKey) &&
     !supabaseUrl.includes("TU_PROYECTO") &&
-    supabaseUrl.startsWith("http") &&
-    // La anon key de Supabase es un JWT que siempre empieza con "eyJ"
-    supabaseAnonKey.startsWith("eyJ")
+    supabaseUrl.startsWith("http")
   );
 };
 
