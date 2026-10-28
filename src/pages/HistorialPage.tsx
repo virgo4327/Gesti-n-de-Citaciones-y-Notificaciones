@@ -34,6 +34,20 @@ export default function HistorialPage() {
   const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", fecha2: "", hora2: "", fecha3: "", hora3: "", cf: "" });
   const [editError, setEditError] = useState<string | null>(null);
 
+  const fechaHoraATs = (item: any) => {
+    const p = item.payload || {};
+    const fecha = p.fechaDiligencia || p.fecha || item.fecha_diligencia || "";
+    const hora = p.horaDiligencia || p.hora || item.hora_diligencia || "";
+    if (!fecha) return 0;
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fecha);
+    if (!m) return 0;
+    const [, dd, mm, aaaa] = m;
+    const h = /^(\d{2}):(\d{2})$/.exec(hora || "00:00");
+    const hh = h ? parseInt(h[1], 10) : 0;
+    const min = h ? parseInt(h[2], 10) : 0;
+    return parseInt(`${aaaa}${mm}${dd}`, 10) * 10000 + hh * 100 + min;
+  };
+
   const filtered = useMemo(() => {
     return history
       .filter((item) => {
@@ -42,11 +56,17 @@ export default function HistorialPage() {
         return matchesQuery && matchesType;
       })
       .sort((a, b) => {
-        const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
-        const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
-        return numA - numB;
+        if (sortOrder === "numero") {
+          const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
+          const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
+          return numA - numB;
+        }
+        const tsA = fechaHoraATs(a);
+        const tsB = fechaHoraATs(b);
+        if (sortOrder === "cronologico-asc") return tsA - tsB;
+        return tsB - tsA;
       });
-  }, [history, query, typeFilter]);
+  }, [history, query, typeFilter, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
