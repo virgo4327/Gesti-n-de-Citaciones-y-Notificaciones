@@ -36,16 +36,30 @@ export default function HistorialPage() {
 
   const fechaHoraATs = (item: any) => {
     const p = item.payload || {};
-    const fecha = p.fechaDiligencia || p.fecha || item.fecha_diligencia || "";
-    const hora = p.horaDiligencia || p.hora || item.hora_diligencia || "";
+    const fecha = p.fechaDiligencia || p.fecha || item.fecha_diligencia || item.created_at || "";
+    const hora = p.horaDiligencia || p.hora || item.hora_diligencia || "00:00";
     if (!fecha) return 0;
-    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fecha);
-    if (!m) return 0;
-    const [, dd, mm, aaaa] = m;
+
+    let y: number, m: number, d: number;
+    const dmY = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fecha);
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+    if (dmY) {
+      d = parseInt(dmY[1], 10);
+      m = parseInt(dmY[2], 10);
+      y = parseInt(dmY[3], 10);
+    } else if (ymd) {
+      y = parseInt(ymd[1], 10);
+      m = parseInt(ymd[2], 10);
+      d = parseInt(ymd[3], 10);
+    } else {
+      const ts = new Date(fecha).getTime();
+      return isNaN(ts) ? 0 : ts;
+    }
+
     const h = /^(\d{2}):(\d{2})$/.exec(hora || "00:00");
     const hh = h ? parseInt(h[1], 10) : 0;
     const min = h ? parseInt(h[2], 10) : 0;
-    return parseInt(`${aaaa}${mm}${dd}`, 10) * 10000 + hh * 100 + min;
+    return y * 10000000000 + m * 100000000 + d * 1000000 + hh * 10000 + min * 100;
   };
 
   const filtered = useMemo(() => {
