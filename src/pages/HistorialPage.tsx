@@ -13,7 +13,7 @@ import { documentLabels } from "../types";
 import { normalizarFecha, verificarConflictoFechaHora, documentCategory, fechaATimestamp } from "../lib/schedule";
 import DocumentPreview from "../components/preview/DocumentPreview";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 const TEMPLATE_FILES: Record<string, string> = {
   a2: "https://docs.google.com/document/d/18ujh0XUk67mOSGsRgjMh1cCv7d_-Dt9MajdH4pz5H6c/edit?usp=sharing",
