@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#1e293b" />
+  <rect x="0" y="0" width="1200" height="120" fill="#0f172a" />
+  <text x="600" y="80" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">DEPDICC – Iquitos</text>
+  <text x="600" y="320" font-family="Arial, sans-serif" font-size="36" fill="#e2e8f0" text-anchor="middle">Gestión de Citaciones y Notificaciones</text>
+  <text x="600" y="380" font-family="Arial, sans-serif" font-size="24" fill="#94a3b8" text-anchor="middle">Policía Nacional del Perú</text>
+  <circle cx="600" cy="500" r="60" fill="#3b82f6" />
+  <text x="600" y="510" font-family="Arial, sans-serif" font-size="32" fill="#ffffff" text-anchor="middle">👮‍♂️</text>
+</svg>
