@@ -34,34 +34,6 @@ export default function HistorialPage() {
   const [editForm, setEditForm] = useState({ numero: "", nombre: "", fecha: "", hora: "", fecha2: "", hora2: "", fecha3: "", hora3: "", cf: "" });
   const [editError, setEditError] = useState<string | null>(null);
 
-  const fechaHoraATs = (item: any) => {
-    const p = item.payload || {};
-    const fecha = p.fechaDiligencia || p.fecha || item.fecha_diligencia || item.created_at || "";
-    const hora = p.horaDiligencia || p.hora || item.hora_diligencia || "00:00";
-    if (!fecha) return 0;
-
-    let y: number, m: number, d: number;
-    const dmY = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fecha);
-    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
-    if (dmY) {
-      d = parseInt(dmY[1], 10);
-      m = parseInt(dmY[2], 10);
-      y = parseInt(dmY[3], 10);
-    } else if (ymd) {
-      y = parseInt(ymd[1], 10);
-      m = parseInt(ymd[2], 10);
-      d = parseInt(ymd[3], 10);
-    } else {
-      const ts = new Date(fecha).getTime();
-      return isNaN(ts) ? 0 : ts;
-    }
-
-    const h = /^(\d{2}):(\d{2})$/.exec(hora || "00:00");
-    const hh = h ? parseInt(h[1], 10) : 0;
-    const min = h ? parseInt(h[2], 10) : 0;
-    return y * 10000000000 + m * 100000000 + d * 1000000 + hh * 10000 + min * 100;
-  };
-
   const filtered = useMemo(() => {
     return history
       .filter((item) => {
@@ -70,17 +42,11 @@ export default function HistorialPage() {
         return matchesQuery && matchesType;
       })
       .sort((a, b) => {
-        if (sortOrder === "numero") {
-          const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
-          const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
-          return numA - numB;
-        }
-        const tsA = fechaHoraATs(a);
-        const tsB = fechaHoraATs(b);
-        if (sortOrder === "cronologico-asc") return tsA - tsB;
-        return tsB - tsA;
+        const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
+        const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
+        return numA - numB;
       });
-  }, [history, query, typeFilter, sortOrder]);
+  }, [history, query, typeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);

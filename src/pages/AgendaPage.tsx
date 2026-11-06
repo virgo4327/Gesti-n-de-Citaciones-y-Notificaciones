@@ -422,9 +422,12 @@ export default function AgendaPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {items.map((item, idx) => (
-                              <tr
-                                key={`${item.id}-${idx}`}
+                            {[...items].sort((a, b) => {
+                              const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
+                              const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
+                              return numA - numB;
+                            }).map((item) => (
+                              <tr key={item.id}>
                                 className={`border-t transition hover:bg-slate-50 ${item.esPasada ? "bg-slate-50/60 opacity-85" : ""}`}
                               >
                                 <td className="px-4 py-2.5 font-semibold text-police">{documentCategory[item.type] || "—"}</td>
