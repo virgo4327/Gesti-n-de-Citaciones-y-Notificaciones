@@ -425,7 +425,10 @@ export default function AgendaPage() {
                             {[...items].sort((a, b) => {
                               const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
                               const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
-                              return numA - numB;
+                              if (isNaN(numA) && isNaN(numB)) return 0;
+                              if (isNaN(numA)) return 1;
+                              if (isNaN(numB)) return -1;
+                              return numB - numA;
                             }).map((item) => (
                               <tr key={item.id} className={`border-t transition hover:bg-slate-50 ${item.esPasada ? "bg-slate-50/60 opacity-85" : ""}`}>
                                 <td className="px-4 py-2.5 font-semibold text-police">{documentCategory[item.type] || "—"}</td>

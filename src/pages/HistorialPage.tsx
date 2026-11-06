@@ -44,7 +44,10 @@ export default function HistorialPage() {
       .sort((a, b) => {
         const numA = parseInt((a.numero || "0").replace(/[^\d]/g, ""), 10);
         const numB = parseInt((b.numero || "0").replace(/[^\d]/g, ""), 10);
-        return numA - numB;
+        if (isNaN(numA) && isNaN(numB)) return 0;
+        if (isNaN(numA)) return 1;
+        if (isNaN(numB)) return -1;
+        return numB - numA;
       });
   }, [history, query, typeFilter]);
 
