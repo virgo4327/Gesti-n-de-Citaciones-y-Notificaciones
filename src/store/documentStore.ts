@@ -285,7 +285,6 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
           await addDiligencia(rest).then(() => uploaded++);
         }
       }
-      }
 
       return { uploaded, error: null };
     } catch (err: any) {
