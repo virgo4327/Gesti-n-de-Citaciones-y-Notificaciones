@@ -109,7 +109,7 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
   cloudConfigured: isFirebaseConfigured(),
 
   saveDraft: (type, payload) =>
-    set((state) => ({ drafts: { ...state.drafts, [type]: payload } }),
+    set((state) => ({ drafts: { ...state.drafts, [type]: payload } })),
 
   addHistory: (type, payload) => {
     const item: HistoryItem = {
