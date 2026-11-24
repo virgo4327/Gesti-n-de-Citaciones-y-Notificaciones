@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import type { DocumentPayload, DocumentType, HistoryItem } from "../types";
 import {
-  db,
-  COLLECTION,
   addDiligencia,
   updateDiligencia,
   deleteDiligencia,
@@ -276,17 +274,17 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
         return { uploaded: 0, error: null };
       }
 
-      const rows = currentHistory.map(mapHistoryItemToDoc);
+      const rows = currentHistory.map((item) => ({ item, row: mapHistoryItemToDoc(item) }));
       let uploaded = 0;
-      for (const row of rows) {
+      for (const { item, row } of rows) {
         try {
-          await updateDiligencia(row.id, row);
+          await updateDiligencia(item.id, row);
           uploaded++;
         } catch (e) {
-          // Si falla el update, intenta crear (insert)
           const { id: _, ...rest } = row;
           await addDiligencia(rest).then(() => uploaded++);
         }
+      }
       }
 
       return { uploaded, error: null };
