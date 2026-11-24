@@ -129,7 +129,7 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
 
     // Inserción directa en la base de datos de Firestore
     if (isFirebaseConfigured()) {
-      addDiligencia(mapHistoryItemToDoc(item)).catch((e) => {
+      addDiligencia(mapHistoryItemToDoc(item), item.id).catch((e) => {
         console.error("Error insertando diligencia en Firestore:", e);
         set({ storageError: `Error al guardar en Firestore: ${e.message}` });
       });
@@ -289,7 +289,7 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
           await updateDiligencia(item.id, row);
           uploaded++;
         } catch (e) {
-          await addDiligencia(row).then(() => uploaded++);
+          await addDiligencia(row, item.id).then(() => uploaded++);
         }
       }
 

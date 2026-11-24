@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -20,8 +20,9 @@ export const isFirebaseConfigured = (): boolean => {
 
 export const COLLECTION = "diligencias";
 
-export async function addDiligencia(data: any) {
-  return addDoc(collection(db, COLLECTION), {
+export async function addDiligencia(data: any, docId?: string) {
+  const ref = docId ? doc(db, COLLECTION, docId) : doc(collection(db, COLLECTION));
+  return setDoc(ref, {
     ...data,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
