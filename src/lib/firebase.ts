@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, ReCaptchaV3Provider } from "firebase/app-check";
 import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -16,8 +16,17 @@ const app = initializeApp(firebaseConfig);
 
 const appCheckKey = import.meta.env.VITE_FIREBASE_APP_CHECK_KEY;
 if (appCheckKey) {
+  if (import.meta.env.DEV) {
+    // Permite probar App Check en localhost sin errores de dominio reCAPTCHA
+    (self as unknown as Record<string, unknown>).FIREBASE_APPCHECK_DEBUG_TOKEN =
+      import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN || true;
+  }
+
+  const useEnterprise = import.meta.env.VITE_FIREBASE_APP_CHECK_PROVIDER === "enterprise";
   initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider(appCheckKey),
+    provider: useEnterprise
+      ? new ReCaptchaEnterpriseProvider(appCheckKey)
+      : new ReCaptchaV3Provider(appCheckKey),
     isTokenAutoRefreshEnabled: true,
   });
 }
