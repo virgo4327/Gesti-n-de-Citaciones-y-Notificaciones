@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas de desarrollo/testing - permitir lectura y escritura anónima
+    // Para producción, restringir por autenticación de usuario
+    match /diligencias/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

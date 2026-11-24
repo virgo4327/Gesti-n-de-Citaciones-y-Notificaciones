@@ -1,6 +1,15 @@
 import { create } from "zustand";
 import type { DocumentPayload, DocumentType, HistoryItem } from "../types";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import {
+  db,
+  COLLECTION,
+  addDiligencia,
+  updateDiligencia,
+  deleteDiligencia,
+  fetchDiligencias,
+  subscribeDiligencias,
+  isFirebaseConfigured,
+} from "../lib/firebase";
 
 const LOCAL_STORAGE_KEY = "depdicc_diligencias_history";
 
@@ -26,38 +35,23 @@ function saveToLocalStorage(history: HistoryItem[]) {
   }
 }
 
-// --- Mappers Supabase ---
+// --- Mappers Firestore ---
 
-function mapRowToHistoryItem(row: any): HistoryItem {
-  const p = row.payload || {};
+function mapDocToHistoryItem(docRef: any): HistoryItem {
+  const data = docRef.data() || {};
   return {
-    id: row.id,
-    type: (row.tipo as DocumentType) || "a2",
-    numero: row.numero || p.numero || "",
-    nombre: row.nombre || p.nombre || "",
-    generatedAt: row.created_at || new Date().toISOString(),
-    payload: {
-      ...p,
-      numero: row.numero || p.numero || "",
-      nombre: row.nombre || p.nombre || "",
-      cf: row.carpeta_fiscal !== undefined ? row.carpeta_fiscal : p.cf || "",
-      delito: row.delito !== undefined ? row.delito : p.delito || p.modalidadDelito || "",
-      fechaDiligencia: row.fecha_diligencia || p.fechaDiligencia || p.fecha || "",
-      horaDiligencia: row.hora_diligencia || p.horaDiligencia || p.hora || "",
-      fecha: row.fecha_diligencia || p.fechaDiligencia || p.fecha || "",
-      hora: row.hora_diligencia || p.horaDiligencia || p.hora || "",
-      fecha2: row.fecha2 !== undefined ? row.fecha2 : p.fecha2 || "",
-      hora2: row.hora2 !== undefined ? row.hora2 : p.hora2 || "",
-      fecha3: row.fecha3 !== undefined ? row.fecha3 : p.fecha3 || "",
-      hora3: row.hora3 !== undefined ? row.hora3 : p.hora3 || "",
-    },
+    id: docRef.id,
+    type: data.tipo || "a2",
+    numero: data.numero || data.payload?.numero || "",
+    nombre: data.nombre || data.payload?.nombre || "",
+    generatedAt: data.created_at || new Date().toISOString(),
+    payload: data.payload || {},
   };
 }
 
-function mapHistoryItemToRow(item: HistoryItem) {
+function mapHistoryItemToDoc(item: HistoryItem) {
   const p = (item.payload || {}) as any;
   return {
-    id: item.id,
     tipo: item.type,
     numero: item.numero,
     nombre: item.nombre,
@@ -112,10 +106,10 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
   history: loadFromLocalStorage(),
   storageError: null,
   isSyncing: false,
-  cloudConfigured: isSupabaseConfigured(),
+  cloudConfigured: isFirebaseConfigured(),
 
   saveDraft: (type, payload) =>
-    set((state) => ({ drafts: { ...state.drafts, [type]: payload } })),
+    set((state) => ({ drafts: { ...state.drafts, [type]: payload } }),
 
   addHistory: (type, payload) => {
     const item: HistoryItem = {
@@ -135,18 +129,12 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
       return { history: newHistory };
     });
 
-    // Inserción directa en la base de datos de Supabase
-    if (supabase && isSupabaseConfigured()) {
-      const row = mapHistoryItemToRow(item);
-      supabase
-        .from("diligencias")
-        .insert([row])
-        .then(({ error }) => {
-          if (error) {
-            console.error("Error insertando diligencia en Supabase:", error);
-            set({ storageError: `Error al guardar en Supabase: ${error.message}` });
-          }
-        });
+    // Inserción directa en la base de datos de Firestore
+    if (isFirebaseConfigured()) {
+      addDiligencia(mapHistoryItemToDoc(item)).catch((e) => {
+        console.error("Error insertando diligencia en Firestore:", e);
+        set({ storageError: `Error al guardar en Firestore: ${e.message}` });
+      });
     }
 
     return item;
@@ -203,32 +191,13 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
       return { history: nextHistory };
     });
 
-    // Actualización directa en la base de datos de Supabase
-    if (updatedItem && supabase && isSupabaseConfigured()) {
-      const row = mapHistoryItemToRow(updatedItem);
-      supabase
-        .from("diligencias")
-        .update({
-          numero: row.numero,
-          nombre: row.nombre,
-          carpeta_fiscal: row.carpeta_fiscal,
-          delito: row.delito,
-          fecha_diligencia: row.fecha_diligencia,
-          hora_diligencia: row.hora_diligencia,
-          fecha2: row.fecha2,
-          hora2: row.hora2,
-          fecha3: row.fecha3,
-          hora3: row.hora3,
-          payload: row.payload,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) {
-            console.error("Error actualizando diligencia en Supabase:", error);
-            set({ storageError: `Error al actualizar en Supabase: ${error.message}` });
-          }
-        });
+    // Actualización directa en la base de datos de Firestore
+    if (updatedItem && isFirebaseConfigured()) {
+      const row = mapHistoryItemToDoc(updatedItem);
+      updateDiligencia(id, row).catch((e) => {
+        console.error("Error actualizando diligencia en Firestore:", e);
+        set({ storageError: `Error al actualizar en Firestore: ${e.message}` });
+      });
     }
   },
 
@@ -240,18 +209,12 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
       return { history: newHistory };
     });
 
-    // Eliminación directa en la base de datos de Supabase
-    if (supabase && isSupabaseConfigured()) {
-      supabase
-        .from("diligencias")
-        .delete()
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) {
-            console.error("Error eliminando diligencia en Supabase:", error);
-            set({ storageError: `Error al eliminar en Supabase: ${error.message}` });
-          }
-        });
+    // Eliminación directa en la base de datos de Firestore
+    if (isFirebaseConfigured()) {
+      deleteDiligencia(id).catch((e) => {
+        console.error("Error eliminando diligencia en Firestore:", e);
+        set({ storageError: `Error al eliminar en Firestore: ${e.message}` });
+      });
     }
   },
 
@@ -265,8 +228,8 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
   clearStorageError: () => set({ storageError: null }),
 
   fetchFromCloud: async () => {
-    if (!supabase || !isSupabaseConfigured()) {
-      // Sin Supabase válido: cargar desde localStorage (ya se cargó en el init,
+    if (!isFirebaseConfigured()) {
+      // Sin Firestore válido: cargar desde localStorage (ya se cargó en el init,
       // pero refrescamos por si acaso)
       const localItems = loadFromLocalStorage();
       if (localItems.length > 0) {
@@ -280,34 +243,17 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
     set({ isSyncing: true, storageError: null });
 
     try {
-      // Consultar únicamente la base de datos central en Supabase
-      const { data, error } = await supabase
-        .from("diligencias")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error al consultar Supabase:", error);
-        set({ storageError: `Error de base de datos: ${error.message}` });
-        // Caer a localStorage si Supabase falla
-        const localItems = loadFromLocalStorage();
-        if (localItems.length > 0) {
-          set({ history: localItems });
-        }
-        return;
-      }
-
-      if (data && Array.isArray(data)) {
-        const cloudItems = data.map(mapRowToHistoryItem);
-        // La lista se reemplaza 100% con los datos de Supabase (sin combinar con datos locales viejos)
-        set({ history: cloudItems, cloudConfigured: true });
-        // Sincronizar localStorage con la versión de la nube
-        saveToLocalStorage(cloudItems);
-      }
+      // Consultar únicamente la base de datos central en Firestore
+      const cloudItems = await fetchDiligencias();
+      const mappedItems = cloudItems.map(mapDocToHistoryItem);
+      // La lista se reemplaza 100% con los datos de Firestore (sin combinar con datos locales viejos)
+      set({ history: mappedItems, cloudConfigured: true });
+      // Sincronizar localStorage con la versión de la nube
+      saveToLocalStorage(mappedItems);
     } catch (err: any) {
-      console.error("Fallo inesperado al conectar con Supabase:", err);
-      set({ storageError: "No se pudo conectar a la base de datos de Supabase." });
-      // Caer a localStorage si hay fallo de red
+      console.error("Fallo inesperado al conectar con Firestore:", err);
+      set({ storageError: "No se pudo conectar a la base de datos de Firestore." });
+      // Caer a localStorage si Supabase falla
       const localItems = loadFromLocalStorage();
       if (localItems.length > 0) {
         set({ history: localItems });
@@ -319,8 +265,8 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
 
   syncLocalToCloud: async () => {
     // Si no hay datos que sincronizar o no está configurado
-    if (!supabase || !isSupabaseConfigured()) {
-      return { uploaded: 0, error: "Supabase no está configurado." };
+    if (!isFirebaseConfigured()) {
+      return { uploaded: 0, error: "Firebase no está configurado." };
     }
 
     set({ isSyncing: true });
@@ -330,16 +276,20 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
         return { uploaded: 0, error: null };
       }
 
-      const rows = currentHistory.map(mapHistoryItemToRow);
-      const { error } = await supabase
-        .from("diligencias")
-        .upsert(rows, { onConflict: "id" });
-
-      if (error) {
-        return { uploaded: 0, error: error.message };
+      const rows = currentHistory.map(mapHistoryItemToDoc);
+      let uploaded = 0;
+      for (const row of rows) {
+        try {
+          await updateDiligencia(row.id, row);
+          uploaded++;
+        } catch (e) {
+          // Si falla el update, intenta crear (insert)
+          const { id: _, ...rest } = row;
+          await addDiligencia(rest).then(() => uploaded++);
+        }
       }
 
-      return { uploaded: rows.length, error: null };
+      return { uploaded, error: null };
     } catch (err: any) {
       return { uploaded: 0, error: err.message || "Error al sincronizar." };
     } finally {
@@ -348,57 +298,23 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
   },
 
   initRealtimeSubscription: () => {
-    if (!supabase || !isSupabaseConfigured()) {
+    if (!isFirebaseConfigured()) {
       return () => {};
     }
 
-    const channel = supabase
-      .channel("diligencias-realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "diligencias" },
-        (payload) => {
-          const newItem = mapRowToHistoryItem(payload.new);
-          set((state) => {
-            if (state.history.some((it) => it.id === newItem.id)) return state;
-            const newHistory = [newItem, ...state.history];
-            saveToLocalStorage(newHistory);
-            return { history: newHistory };
-          });
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "diligencias" },
-        (payload) => {
-          const updatedItem = mapRowToHistoryItem(payload.new);
-          set((state) => {
-            const newHistory = state.history.map((it) =>
-              it.id === updatedItem.id ? updatedItem : it
-            );
-            saveToLocalStorage(newHistory);
-            return { history: newHistory };
-          });
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "diligencias" },
-        (payload) => {
-          const deletedId = (payload.old as any)?.id;
-          if (deletedId) {
-            set((state) => {
-              const newHistory = state.history.filter((it) => it.id !== deletedId);
-              saveToLocalStorage(newHistory);
-              return { history: newHistory };
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase?.removeChannel(channel);
-    };
+    return subscribeDiligencias((items) => {
+      const mappedItems = items.map(mapDocToHistoryItem);
+      set((state) => {
+        const existingIds = new Set(state.history.map((it) => it.id));
+        const newItems = mappedItems.filter((it) => !existingIds.has(it.id));
+        const updatedItems = state.history.map((it) => {
+          const found = mappedItems.find((mi) => mi.id === it.id);
+          return found ? found : it;
+        });
+        const newHistory = [...newItems, ...updatedItems];
+        saveToLocalStorage(newHistory);
+        return { history: newHistory };
+      });
+    });
   },
 }));
