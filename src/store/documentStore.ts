@@ -36,7 +36,7 @@ function saveToLocalStorage(history: HistoryItem[]) {
 // --- Mappers Firestore ---
 
 function mapDocToHistoryItem(docRef: any): HistoryItem {
-  const data = docRef.data() || {};
+  const data = docRef || {};
   return {
     id: docRef.id,
     type: data.tipo || "a2",
