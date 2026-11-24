@@ -245,9 +245,17 @@ export const useDocumentStore = create<Store>()((set, getStore) => ({
       const cloudItems = await fetchDiligencias();
       const mappedItems = cloudItems.map(mapDocToHistoryItem);
       // La lista se reemplaza 100% con los datos de Firestore (sin combinar con datos locales viejos)
-      set({ history: mappedItems, cloudConfigured: true });
-      // Sincronizar localStorage con la versión de la nube
-      saveToLocalStorage(mappedItems);
+      if (mappedItems.length > 0) {
+        set({ history: mappedItems, cloudConfigured: true });
+        saveToLocalStorage(mappedItems);
+      } else {
+        const localItems = loadFromLocalStorage();
+        if (localItems.length > 0) {
+          set({ history: localItems, cloudConfigured: true });
+        } else {
+          set({ cloudConfigured: true });
+        }
+      }
     } catch (err: any) {
       console.error("Fallo inesperado al conectar con Firestore:", err);
       set({ storageError: "No se pudo conectar a la base de datos de Firestore." });
