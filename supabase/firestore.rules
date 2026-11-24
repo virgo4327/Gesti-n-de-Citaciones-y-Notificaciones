@@ -1,8 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Reglas de desarrollo/testing - permitir lectura y escritura anónima
-    // Para producción, restringir por autenticación de usuario
+    // ⚠️ ADVERTENCIA: Sin autenticación de usuarios, estas reglas permiten
+    // lectura y escritura a cualquiera que tenga tu projectId y apiKey.
+    // Para producción real, implementa Firebase Authentication o App Check.
     match /diligencias/{document=**} {
       allow read, write: if true;
     }

@@ -35,11 +35,12 @@
     <!-- Seguridad -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self';
+      script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
       style-src 'self' 'unsafe-inline';
       img-src 'self' data: blob:;
       font-src 'self' data:;
-      connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+      connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://firestore.googleapis.com https://firebaseappcheck.googleapis.com https://www.google.com/recaptcha/;
+      frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
