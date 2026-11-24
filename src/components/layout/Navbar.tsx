@@ -1,4 +1,4 @@
-import { Menu, Leaf, X, Cloud, CloudOff, RefreshCw } from "lucide-react";
+import { Menu, FileText, X, Cloud, CloudOff, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useDocumentStore } from "../../store/documentStore";
@@ -12,7 +12,7 @@ export default function Navbar() {
       <nav className="flex h-[70px] items-center justify-between px-4 md:px-6 lg:px-20">
         <Link to="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-police text-white">
-            <Leaf className="h-7 w-7" />
+            <FileText className="h-7 w-7" />
           </div>
           <div className="hidden h-10 w-px bg-slate-300 sm:block" />
           <div>
